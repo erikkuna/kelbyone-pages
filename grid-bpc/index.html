@@ -484,15 +484,6 @@ body {
   <form id="critiqueForm" novalidate>
 
     <!-- Status Messages -->
-    <div id="statusSuccess" class="status-message success">
-      <h3>&#10003; Submission Received!</h3>
-      <p>Your photos are in the queue. Good luck on the show!</p>
-    </div>
-    <div id="statusError" class="status-message error">
-      <h3>Submission Failed</h3>
-      <p id="errorDetail">Something went wrong. Please try again.</p>
-    </div>
-
     <!-- Progress -->
     <div id="progressContainer" class="progress-container">
       <div class="progress-bar-track">
@@ -596,6 +587,15 @@ body {
     </div>
 
     <!-- Submit -->
+    <div id="statusSuccess" class="status-message success">
+      <h3>&#10003; Submission Received!</h3>
+      <p>Your photos are in the queue. Good luck on the show!</p>
+    </div>
+    <div id="statusError" class="status-message error">
+      <h3>Submission Failed</h3>
+      <p id="errorDetail">Something went wrong. Please try again.</p>
+    </div>
+
     <button type="submit" class="submit-btn" id="submitBtn">
       Submit for Critique
     </button>
