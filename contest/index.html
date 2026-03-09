@@ -397,7 +397,7 @@ body {
 
     <!-- Shipping Address -->
     <div class="form-section">
-      <div class="form-section-title">Shipping Address <span style="font-weight:400;color:var(--text-muted);font-size:0.85em;text-transform:none;">(so we can send your prize!)</span></div>
+      <div class="form-section-title">Shipping Address <span class="optional">(optional)</span> <span style="font-weight:400;color:var(--text-muted);font-size:0.85em;text-transform:none;display:block;margin-top:0.35rem;letter-spacing:0;">So we can send you your prize if it needs to be shipped</span></div>
 
       <div class="field" id="countryField">
         <label for="country">Country</label>
@@ -420,7 +420,7 @@ body {
 
       <div class="field" id="addressField">
         <label for="address" id="addressLabel">Street Address</label>
-        <input type="text" id="address" name="address" placeholder="123 Main St, Apt 4" required autocomplete="address-line1">
+        <input type="text" id="address" name="address" placeholder="123 Main St, Apt 4" autocomplete="address-line1">
         <div class="error-msg">Please enter your street address.</div>
       </div>
 
@@ -432,19 +432,19 @@ body {
       <div id="addressRow" class="field-row">
         <div class="field" id="cityField">
           <label for="city" id="cityLabel">City</label>
-          <input type="text" id="city" name="city" placeholder="Tampa" required autocomplete="address-level2">
+          <input type="text" id="city" name="city" placeholder="Tampa" autocomplete="address-level2">
           <div class="error-msg">Required.</div>
         </div>
 
         <div class="field field-md" id="stateField">
           <label for="state" id="stateLabel">State</label>
-          <input type="text" id="state" name="state" placeholder="FL" required autocomplete="address-level1">
+          <input type="text" id="state" name="state" placeholder="FL" autocomplete="address-level1">
           <div class="error-msg">Required.</div>
         </div>
 
         <div class="field field-sm" id="zipField">
           <label for="zip" id="zipLabel">Zip</label>
-          <input type="text" id="zip" name="zip" placeholder="33607" required autocomplete="postal-code">
+          <input type="text" id="zip" name="zip" placeholder="33607" autocomplete="postal-code">
           <div class="error-msg">Required.</div>
         </div>
       </div>
@@ -501,11 +501,7 @@ body {
   function validateForm() {
     var valid = true;
     var required = [
-      {id: 'name', field: 'nameField'},
-      {id: 'address', field: 'addressField'},
-      {id: 'city', field: 'cityField'},
-      {id: 'state', field: 'stateField'},
-      {id: 'zip', field: 'zipField'}
+      {id: 'name', field: 'nameField'}
     ];
 
     required.forEach(function(r) {
