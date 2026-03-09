@@ -614,7 +614,7 @@ body {
   // ============================================================
   // CONFIGURATION: Replace this URL with your deployed Apps Script web app URL
   // ============================================================
-  var ENDPOINT = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwT1oR9urKZZPj3QkXMkbPHcWu8yAg43bh65pmh9VjkqCdL5w-uiD2bjbwjgu0Y9bn4rw/exec';
 
   var MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
   var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
@@ -789,7 +789,7 @@ body {
 
     if (!validateForm()) return;
 
-    if (ENDPOINT === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+    if (!ENDPOINT || ENDPOINT === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
       showError('Backend not configured. See README.md to deploy the Apps Script and set the endpoint URL.');
       return;
     }
