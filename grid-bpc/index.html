@@ -805,8 +805,10 @@ body {
 
     images.forEach(function(img, i) {
       if (img) {
+        var mimeType = img.file ? img.file.type : 'image/jpeg';
         payload.images.push({
           data: img.dataUrl,
+          mimeType: mimeType,
           filename: img.name,
           description: document.getElementById('desc' + i).value.trim()
         });
@@ -815,22 +817,33 @@ body {
 
     setProgress(15, 'Uploading ' + payload.images.length + ' photo' + (payload.images.length > 1 ? 's' : '') + '...');
 
-    // Send via fetch to Apps Script
+    // Send via fetch to Apps Script (follow redirects)
     fetch(ENDPOINT, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      redirect: 'follow'
     })
     .then(function(response) {
-      // no-cors gives opaque response, so we assume success if no network error
-      setProgress(100, 'Done!');
-      setTimeout(function() {
+      return response.text();
+    })
+    .then(function(text) {
+      console.log('Server response:', text);
+      var result;
+      try { result = JSON.parse(text); } catch(e) { result = {}; }
+      if (result.success) {
+        setProgress(100, 'Done!');
+        setTimeout(function() {
+          hideProgress();
+          setSubmitting(false);
+          showSuccess();
+          resetForm();
+        }, 600);
+      } else {
         hideProgress();
         setSubmitting(false);
-        showSuccess();
-        resetForm();
-      }, 600);
+        showError(result.error || 'Submission failed. Please try again.');
+      }
     })
     .catch(function(err) {
       hideProgress();
