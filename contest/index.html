@@ -399,32 +399,6 @@ body {
     <div class="form-section">
       <div class="form-section-title">Shipping Address <span style="font-weight:400;color:var(--text-muted);font-size:0.85em;text-transform:none;">(so we can send your prize!)</span></div>
 
-      <div class="field" id="addressField">
-        <label for="address">Street Address</label>
-        <input type="text" id="address" name="address" placeholder="123 Main St, Apt 4" required autocomplete="address-line1">
-        <div class="error-msg">Please enter your street address.</div>
-      </div>
-
-      <div class="field-row">
-        <div class="field" id="cityField">
-          <label for="city">City</label>
-          <input type="text" id="city" name="city" placeholder="Tampa" required autocomplete="address-level2">
-          <div class="error-msg">Required.</div>
-        </div>
-
-        <div class="field field-md" id="stateField">
-          <label for="state">State</label>
-          <input type="text" id="state" name="state" placeholder="FL" required autocomplete="address-level1">
-          <div class="error-msg">Required.</div>
-        </div>
-
-        <div class="field field-sm" id="zipField">
-          <label for="zip">Zip</label>
-          <input type="text" id="zip" name="zip" placeholder="33607" required autocomplete="postal-code">
-          <div class="error-msg">Required.</div>
-        </div>
-      </div>
-
       <div class="field" id="countryField">
         <label for="country">Country</label>
         <select id="country" name="country" autocomplete="country">
@@ -434,8 +408,45 @@ body {
           <option value="AU">Australia</option>
           <option value="DE">Germany</option>
           <option value="FR">France</option>
+          <option value="JP">Japan</option>
+          <option value="NZ">New Zealand</option>
           <option value="OTHER">Other</option>
         </select>
+      </div>
+
+      <div id="intlNotice" class="prize-callout" style="display:none;text-align:left;font-size:0.85rem;">
+        <p>⚠️ <strong>International winners:</strong> If you win a prize that requires shipping, you are responsible for all VAT, customs duties, tariffs, and taxes associated with receiving the shipment in your country.</p>
+      </div>
+
+      <div class="field" id="addressField">
+        <label for="address" id="addressLabel">Street Address</label>
+        <input type="text" id="address" name="address" placeholder="123 Main St, Apt 4" required autocomplete="address-line1">
+        <div class="error-msg">Please enter your street address.</div>
+      </div>
+
+      <div class="field" id="address2Field" style="display:none;">
+        <label for="address2">Address Line 2 <span class="optional">(optional)</span></label>
+        <input type="text" id="address2" name="address2" placeholder="" autocomplete="address-line2">
+      </div>
+
+      <div id="addressRow" class="field-row">
+        <div class="field" id="cityField">
+          <label for="city" id="cityLabel">City</label>
+          <input type="text" id="city" name="city" placeholder="Tampa" required autocomplete="address-level2">
+          <div class="error-msg">Required.</div>
+        </div>
+
+        <div class="field field-md" id="stateField">
+          <label for="state" id="stateLabel">State</label>
+          <input type="text" id="state" name="state" placeholder="FL" required autocomplete="address-level1">
+          <div class="error-msg">Required.</div>
+        </div>
+
+        <div class="field field-sm" id="zipField">
+          <label for="zip" id="zipLabel">Zip</label>
+          <input type="text" id="zip" name="zip" placeholder="33607" required autocomplete="postal-code">
+          <div class="error-msg">Required.</div>
+        </div>
       </div>
     </div>
 
@@ -454,26 +465,26 @@ body {
       </div>
     </div>
 
-    <!-- Status + Submit -->
-    <div id="statusSuccess" class="status-message success">
-      <h3>🎉 You're In!</h3>
-      <p>Your entry has been received. Watch the show to see if you win! Good luck!</p>
-    </div>
-    <div id="statusError" class="status-message error">
-      <h3>Entry Failed</h3>
-      <p id="errorDetail">Something went wrong. Please try again.</p>
-    </div>
-
     <button type="submit" class="submit-btn" id="submitBtn">
       <span class="btn-text">Enter to Win 🎉</span>
       <span class="spinner" style="display:none"></span>
     </button>
 
   </form>
+
+  <!-- Status messages OUTSIDE the form so they stay visible -->
+  <div id="statusSuccess" class="status-message success">
+    <h3>🎉 You're In!</h3>
+    <p>Your entry has been received. Watch the show to see if you win! Good luck!</p>
+  </div>
+  <div id="statusError" class="status-message error">
+    <h3>Entry Failed</h3>
+    <p id="errorDetail">Something went wrong. Please try again.</p>
+  </div>
 </main>
 
 <footer class="footer">
-  <p>By entering, you agree to have your name announced on The Grid if selected as a winner. You also agree that KelbyOne may contact you regarding future announcements, events, and offers. One entry per person. Duplicate entries will be rejected. Winners are selected at random.</p>
+  <p>By entering, you agree to have your name announced on The Grid if selected as a winner. You also agree that KelbyOne may contact you regarding future announcements, events, and offers. One entry per person. Duplicate entries will be rejected. Winners are selected at random. International winners are responsible for all VAT, customs duties, tariffs, and taxes on shipped prizes.</p>
 </footer>
 
 <script>
@@ -552,7 +563,7 @@ body {
       name: document.getElementById('name').value.trim(),
       email: document.getElementById('email').value.trim(),
       phone: document.getElementById('phone').value.trim(),
-      address: document.getElementById('address').value.trim(),
+      address: document.getElementById('address').value.trim() + (document.getElementById('address2').value.trim() ? ', ' + document.getElementById('address2').value.trim() : ''),
       city: document.getElementById('city').value.trim(),
       state: document.getElementById('state').value.trim(),
       zip: document.getElementById('zip').value.trim(),
@@ -592,6 +603,30 @@ body {
     document.getElementById(id).addEventListener('input', function() {
       toggleError(fieldId, false);
     });
+  });
+
+  // Country-adaptive address labels
+  var countryConfig = {
+    US: { state: 'State', zip: 'Zip', statePh: 'FL', zipPh: '33607', addr2: false },
+    CA: { state: 'Province', zip: 'Postal Code', statePh: 'ON', zipPh: 'M5V 2T6', addr2: false },
+    GB: { state: 'County', zip: 'Postcode', statePh: 'London', zipPh: 'SW1A 1AA', addr2: true },
+    AU: { state: 'State', zip: 'Postcode', statePh: 'NSW', zipPh: '2000', addr2: false },
+    DE: { state: 'State', zip: 'PLZ', statePh: 'Bayern', zipPh: '80331', addr2: true },
+    FR: { state: 'Region', zip: 'Code Postal', statePh: 'Île-de-France', zipPh: '75001', addr2: true },
+    JP: { state: 'Prefecture', zip: 'Postal Code', statePh: 'Tokyo', zipPh: '100-0001', addr2: true },
+    NZ: { state: 'Region', zip: 'Postcode', statePh: 'Auckland', zipPh: '1010', addr2: false },
+    OTHER: { state: 'State / Province / Region', zip: 'Postal Code', statePh: '', zipPh: '', addr2: true }
+  };
+
+  document.getElementById('country').addEventListener('change', function() {
+    var c = this.value;
+    var cfg = countryConfig[c] || countryConfig.OTHER;
+    document.getElementById('stateLabel').textContent = cfg.state;
+    document.getElementById('zipLabel').textContent = cfg.zip;
+    document.getElementById('state').placeholder = cfg.statePh;
+    document.getElementById('zip').placeholder = cfg.zipPh;
+    document.getElementById('address2Field').style.display = cfg.addr2 ? 'block' : 'none';
+    document.getElementById('intlNotice').style.display = (c === 'US') ? 'none' : 'block';
   });
 
 })();
