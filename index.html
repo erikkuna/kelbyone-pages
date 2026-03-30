@@ -3,39 +3,291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KelbyOne - The Grid</title>
+<title>The Grid Podcast — KelbyOne</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-.container { text-align: center; max-width: 500px; padding: 2rem; }
-h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: -0.02em; }
-h1 span { color: #f5a623; }
-.subtitle { color: #888; font-size: 0.95rem; margin-bottom: 2.5rem; }
-.links { display: flex; flex-direction: column; gap: 1rem; }
-.links a { display: block; padding: 1.2rem 2rem; border-radius: 10px; text-decoration: none; font-size: 1.1rem; font-weight: 700; transition: transform 0.2s, box-shadow 0.2s; }
-.links a:hover { transform: translateY(-2px); }
-.link-critique { background: linear-gradient(135deg, #f5a623, #e8932a); color: #000; }
-.link-critique:hover { box-shadow: 0 8px 30px rgba(245,166,35,0.3); }
-.link-edit { background: linear-gradient(135deg, #4fc3f7, #29b6f6); color: #000; }
-.link-edit:hover { box-shadow: 0 8px 30px rgba(79,195,247,0.3); }
-.link-contest { background: #1e1e1e; color: #f5f5f5; border: 1px solid #333; }
-.link-contest:hover { box-shadow: 0 8px 30px rgba(255,255,255,0.05); background: #252525; }
-.footer { margin-top: 3rem; font-size: 0.8rem; color: #444; }
-.footer a { color: #666; text-decoration: none; }
-.footer a:hover { color: #f5a623; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a0a;color:#f5f5f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.25rem}
+
+.hero{text-align:center;margin-bottom:2.5rem}
+.badge{display:inline-block;font-size:0.65rem;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#000;background:#f5a623;padding:0.35rem 1rem;border-radius:4px;margin-bottom:1.25rem}
+h1{font-size:clamp(2.5rem,7vw,4rem);font-weight:900;text-transform:uppercase;letter-spacing:-0.03em;line-height:1}
+h1 span{color:#f5a623}
+.hosts{font-size:1rem;color:#999;margin-top:0.6rem;font-weight:400}
+.hosts strong{color:#ccc;font-weight:600}
+
+/* Schedule */
+.schedule{text-align:center;margin-bottom:2.5rem;max-width:480px}
+.showtime{font-size:1.3rem;font-weight:700;color:#f5f5f5;margin-bottom:0.3rem}
+.showtime-accent{color:#f5a623}
+.local-time{font-size:0.95rem;color:#f5a623;margin-bottom:0.75rem;min-height:1.4em}
+.schedule-actions{display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-top:0.75rem}
+.schedule-actions a,.schedule-actions button{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;cursor:pointer;transition:all 0.2s;border:1px solid #333;background:#1a1a1a;color:#ccc;font-family:inherit}
+.schedule-actions a:hover,.schedule-actions button:hover{background:#252525;border-color:#555}
+.schedule-actions .cal-btn{background:rgba(245,166,35,0.1);border-color:rgba(245,166,35,0.25);color:#f5a623}
+.schedule-actions .cal-btn:hover{background:rgba(245,166,35,0.18)}
+
+/* Links */
+.links{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:480px;margin-bottom:2.5rem}
+.links a{display:flex;align-items:center;gap:0.75rem;padding:1.1rem 1.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;font-weight:700;transition:transform 0.2s,box-shadow 0.2s}
+.links a:hover{transform:translateY(-2px)}
+.links a .link-icon{font-size:1.3rem;flex-shrink:0}
+.links a .link-text{flex:1}
+.links a .link-arrow{color:rgba(0,0,0,0.3);font-size:1.2rem}
+.link-critique{background:linear-gradient(135deg,#f5a623,#e8932a);color:#000}
+.link-critique:hover{box-shadow:0 8px 30px rgba(245,166,35,0.3)}
+.link-edit{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#000}
+.link-edit:hover{box-shadow:0 8px 30px rgba(79,195,247,0.3)}
+.link-contest{background:#1e1e1e;color:#f5f5f5;border:1px solid #333}
+.link-contest:hover{box-shadow:0 8px 30px rgba(255,255,255,0.05);background:#252525}
+.link-contest .link-arrow{color:rgba(255,255,255,0.2)}
+
+/* Watch */
+.watch{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;max-width:480px}
+.watch a{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;color:#fff;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:600;transition:opacity 0.2s}
+.watch a:hover{opacity:0.85}
+.yt-btn{background:#ff0000}
+.fb-btn{background:#1877f2}
+
+.footer{text-align:center;font-size:0.75rem;color:#333;margin-top:1rem}
+.footer a{color:#555;text-decoration:none}
+.footer a:hover{color:#f5a623}
+
+/* Calendar dropdown */
+.cal-dropdown{position:relative;display:inline-block}
+.cal-menu{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:0.5rem;min-width:220px;z-index:10;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+.cal-menu.show{display:block}
+.cal-menu a{display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;color:#ccc;text-decoration:none;font-size:0.85rem;font-weight:500;border-radius:6px;transition:background 0.15s}
+.cal-menu a:hover{background:#252525;color:#fff}
+.cal-menu a svg{flex-shrink:0}
+
+@media(max-width:480px){
+  .schedule-actions{flex-direction:column;align-items:center}
+  .watch{flex-direction:column;align-items:center}
+}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>The <span>Grid</span></h1>
-<p class="subtitle">Submit your photos for the show</p>
+
+<div class="hero">
+  <div class="badge">Live Every Thursday</div>
+  <h1>The <span>Grid</span></h1>
+  <div class="hosts">Hosted by <strong>Scott Kelby</strong> &amp; <strong>Erik Kuna</strong></div>
+</div>
+
+<div class="schedule">
+  <div class="showtime">Thursdays at <span class="showtime-accent">1:00 PM Eastern</span></div>
+  <div class="local-time" id="localTime"></div>
+  <div class="schedule-actions">
+    <button onclick="showLocal()" id="tzBtn" style="display:none">🕐 Show in My Timezone</button>
+    <div class="cal-dropdown">
+      <button class="cal-btn" onclick="toggleCalMenu()" id="calBtn">📅 Add to Calendar</button>
+      <div class="cal-menu" id="calMenu">
+        <a href="#" onclick="addGoogle();return false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#4285f4"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34a853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#fbbc05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#ea4335"/></svg>
+          Google Calendar
+        </a>
+        <a href="#" onclick="addOutlook();return false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0078d4"><path d="M24 7.387v10.478c0 .23-.08.424-.238.58a.796.796 0 0 1-.584.236h-8.322V6.57h8.322c.228 0 .422.08.584.237A.786.786 0 0 1 24 7.387zM14.856 6.57V18.68H7.394l-6.278-1.66A.786.786 0 0 1 .59 16.5a.786.786 0 0 1-.236-.58V7.387c0-.23.08-.424.236-.58a.786.786 0 0 1 .526-.237l6.278-1.66h7.462z"/></svg>
+          Outlook Calendar
+        </a>
+        <a href="#" onclick="downloadICS();return false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#999"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#999" fill="none" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="#999" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="#999" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="#999" stroke-width="2"/></svg>
+          Download .ics File
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="links">
-  <a href="/gridphotos/" class="link-critique">📷 Blind Photo Critique Submission</a>
-  <a href="/gridedit/" class="link-edit">🎨 How Would I Edit Your Photo</a>
-  <a href="/gridcontest/" class="link-contest">🎁 Live Contest Entry</a>
+  <a href="/gridphotos/" class="link-critique">
+    <span class="link-icon">📷</span>
+    <span class="link-text">Blind Photo Critique Submission</span>
+    <span class="link-arrow">›</span>
+  </a>
+  <a href="/gridedit/" class="link-edit">
+    <span class="link-icon">🎨</span>
+    <span class="link-text">How Would I Edit Your Photo</span>
+    <span class="link-arrow">›</span>
+  </a>
+  <a href="/gridcontest/" class="link-contest">
+    <span class="link-icon">🎁</span>
+    <span class="link-text">Live Contest Entry</span>
+    <span class="link-arrow">›</span>
+  </a>
 </div>
+
+<div class="watch">
+  <a href="https://www.youtube.com/kelbyone?sub_confirmation=1" target="_blank" rel="noopener" class="yt-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+    Subscribe on YouTube
+  </a>
+  <a href="https://www.facebook.com/SKelby/" target="_blank" rel="noopener" class="fb-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854V15.47H7.078V12h3.047V9.356c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.875V12h3.328l-.532 3.47h-2.796v8.384C19.612 22.954 24 17.99 24 12z"/></svg>
+    Follow Scott Kelby
+  </a>
+</div>
+
 <div class="footer">
-  <a href="https://kelbyone.com">kelbyone.com</a> · <a href="https://youtube.com/kelbyone">YouTube</a>
+  <a href="https://kelbyone.com">kelbyone.com</a> · <a href="https://youtube.com/kelbyone">YouTube</a> · <a href="https://kelbyone.com/webcasts/thegrid">All Episodes</a>
 </div>
-</div>
+
+<script>
+// Timezone conversion
+function showLocal() {
+  var el = document.getElementById('localTime');
+  try {
+    // Next Thursday at 1pm ET
+    var now = new Date();
+    var next = new Date();
+    var day = next.getDay();
+    var diff = (4 - day + 7) % 7 || 7; // days until Thursday
+    next.setDate(next.getDate() + diff);
+    next.setHours(13, 0, 0, 0);
+    // Convert 1pm ET to UTC, then to local
+    // ET is UTC-4 (EDT) or UTC-5 (EST)
+    var etOffset = isDST(next) ? -4 : -5;
+    var utc = new Date(next.getTime() - etOffset * 60 * 60 * 1000);
+    // Nope, simpler: just create the date in ET and format in local
+    var etDate = new Date(next.toLocaleString('en-US', {timeZone: 'America/New_York'}));
+    
+    // Get the user's timezone
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var localStr = next.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    // Create a date that's 1pm ET in UTC
+    var etStr = '1:00 PM';
+    var formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZoneName: 'short'
+    });
+    
+    // Build the ET time as UTC
+    var year = next.getFullYear(), month = next.getMonth(), date = next.getDate();
+    var etUTC = new Date(Date.UTC(year, month, date, 13 - etOffset, 0, 0));
+    var localFormatted = formatter.format(etUTC);
+    
+    if (tz === 'America/New_York') {
+      el.textContent = "That's your local time!";
+    } else {
+      el.textContent = "That's " + localFormatted + " in your timezone";
+    }
+    el.style.display = 'block';
+    document.getElementById('tzBtn').textContent = '🕐 ' + localFormatted;
+  } catch(e) {
+    el.textContent = '';
+  }
+}
+
+function isDST(d) {
+  var jan = new Date(d.getFullYear(), 0, 1).getTimezoneOffset();
+  var jul = new Date(d.getFullYear(), 6, 1).getTimezoneOffset();
+  return Math.max(jan, jul) !== d.getTimezoneOffset();
+}
+
+// Auto-show on load
+(function(){
+  var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (tz && tz !== 'America/New_York') {
+    document.getElementById('tzBtn').style.display = 'inline-flex';
+    showLocal();
+  } else {
+    document.getElementById('localTime').textContent = "That's your local time!";
+  }
+})();
+
+// Calendar
+function toggleCalMenu() {
+  document.getElementById('calMenu').classList.toggle('show');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cal-dropdown')) {
+    document.getElementById('calMenu').classList.remove('show');
+  }
+});
+
+function getNextThursday() {
+  var d = new Date();
+  var day = d.getDay();
+  var diff = (4 - day + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function formatGoogleDate(d, h, m) {
+  var year = d.getFullYear();
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  var hour = String(h).padStart(2, '0');
+  var min = String(m).padStart(2, '0');
+  return year + month + day + 'T' + hour + min + '00';
+}
+
+function addGoogle() {
+  var d = getNextThursday();
+  var start = formatGoogleDate(d, 13, 0);
+  var end = formatGoogleDate(d, 14, 30);
+  var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=The+Grid+Podcast+-+Live'
+    + '&dates=' + start + '/' + end
+    + '&ctz=America/New_York'
+    + '&details=The+Grid+with+Scott+Kelby+%26+Erik+Kuna.+Watch+live+at+youtube.com/kelbyone'
+    + '&location=https://youtube.com/kelbyone'
+    + '&recur=RRULE:FREQ=WEEKLY;BYDAY=TH';
+  window.open(url, '_blank');
+  document.getElementById('calMenu').classList.remove('show');
+}
+
+function addOutlook() {
+  var d = getNextThursday();
+  var year = d.getFullYear();
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  var url = 'https://outlook.live.com/calendar/0/deeplink/compose?subject=The+Grid+Podcast+-+Live'
+    + '&startdt=' + year + '-' + month + '-' + day + 'T13:00:00'
+    + '&enddt=' + year + '-' + month + '-' + day + 'T14:30:00'
+    + '&body=The+Grid+with+Scott+Kelby+%26+Erik+Kuna.+Watch+live+at+youtube.com/kelbyone'
+    + '&location=https://youtube.com/kelbyone';
+  window.open(url, '_blank');
+  document.getElementById('calMenu').classList.remove('show');
+}
+
+function downloadICS() {
+  var d = getNextThursday();
+  var year = d.getFullYear();
+  var month = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  var ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//KelbyOne//The Grid//EN',
+    'BEGIN:VEVENT',
+    'DTSTART;TZID=America/New_York:' + year + month + day + 'T130000',
+    'DTEND;TZID=America/New_York:' + year + month + day + 'T143000',
+    'RRULE:FREQ=WEEKLY;BYDAY=TH',
+    'SUMMARY:The Grid Podcast - Live',
+    'DESCRIPTION:The Grid with Scott Kelby & Erik Kuna. Watch live at youtube.com/kelbyone',
+    'URL:https://youtube.com/kelbyone',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  var blob = new Blob([ics], {type: 'text/calendar'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'the-grid-podcast.ics';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  document.getElementById('calMenu').classList.remove('show');
+}
+</script>
+
 </body>
 </html>
