@@ -374,19 +374,9 @@ body {
             <input type="text" id="notes" name="notes" placeholder="Anything we should know about your images?">
           </div>
         </div>
-        <div class="grid-2">
-          <div class="field">
-            <label for="instagram">Instagram <span class="optional">(optional)</span></label>
-            <input type="text" id="instagram" name="instagram" placeholder="@yourhandle">
-          </div>
-          <div class="field">
-            <label for="twitter">X / Twitter <span class="optional">(optional)</span></label>
-            <input type="text" id="twitter" name="twitter" placeholder="@yourhandle">
-          </div>
-        </div>
         <div class="field">
-          <label for="facebook">Facebook <span class="optional">(optional)</span></label>
-          <input type="text" id="facebook" name="facebook" placeholder="Facebook profile or name you'd like us to credit">
+          <label for="social">Social media handle <span class="optional">(optional)</span></label>
+          <input type="text" id="social" name="social" placeholder="Example: @yourhandle on Instagram, X, or Facebook">
         </div>
       </div>
 
@@ -590,9 +580,7 @@ body {
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         notes: document.getElementById('notes').value.trim(),
-        instagram: document.getElementById('instagram').value.trim(),
-        twitter: document.getElementById('twitter').value.trim(),
-        facebook: document.getElementById('facebook').value.trim(),
+        social: document.getElementById('social').value.trim(),
         permission: document.getElementById('permission').checked,
         images: images
       };
@@ -603,7 +591,16 @@ body {
         body: JSON.stringify(payload)
       });
 
-      var result = await response.json();
+      var raw = await response.text();
+      var result;
+      try {
+        result = JSON.parse(raw);
+      } catch (parseErr) {
+        if (raw && /Sign in - Google Accounts|ServiceLogin|accounts\.google\.com/i.test(raw)) {
+          throw new Error('The upload service is asking for Google sign-in. The Apps Script web app needs to be redeployed with public access.');
+        }
+        throw new Error('The upload service returned an invalid response.');
+      }
       if (!response.ok || !result.success) {
         throw new Error(result.message || 'Upload failed');
       }
