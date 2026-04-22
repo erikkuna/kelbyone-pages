@@ -340,13 +340,13 @@ body {
 <header class="header">
   <div class="header-badge">KelbyOne Summit</div>
   <h1>Share Your <span>Best Photos</span></h1>
-  <p>Upload up to 10 of your favorite images from the Summit weekend so we can share the work with the group, the models, and the locations we visited, and celebrate what everyone created.</p>
+  <p>Upload 1 to 10 of your favorite images from the Summit weekend so we can share the work with the group, the models, and the locations we visited, and build a gallery of the best images to share with the membership.</p>
 </header>
 
 <main class="container">
   <div class="form-shell">
     <div class="form-intro">
-      <p>JPEG, JPG, PNG, and HEIF only. Please choose the images you’d be proud for us to share and credit back to you.</p>
+      <p>JPEG, JPG, PNG, and HEIF only. Please choose the images you’d be proud for us to share and credit back to you. You can submit as few as 1 image or as many as 10.</p>
     </div>
 
     <form id="summitForm" novalidate>
@@ -374,6 +374,20 @@ body {
             <input type="text" id="notes" name="notes" placeholder="Anything we should know about your images?">
           </div>
         </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="instagram">Instagram <span class="optional">(optional)</span></label>
+            <input type="text" id="instagram" name="instagram" placeholder="@yourhandle">
+          </div>
+          <div class="field">
+            <label for="twitter">X / Twitter <span class="optional">(optional)</span></label>
+            <input type="text" id="twitter" name="twitter" placeholder="@yourhandle">
+          </div>
+        </div>
+        <div class="field">
+          <label for="facebook">Facebook <span class="optional">(optional)</span></label>
+          <input type="text" id="facebook" name="facebook" placeholder="Facebook profile or name you'd like us to credit">
+        </div>
       </div>
 
       <div class="form-section">
@@ -381,9 +395,9 @@ body {
         <div id="uploadZone" class="upload-zone">
           <div class="upload-cta">
             <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="36" height="28" rx="3"></rect><circle cx="18" cy="22" r="4"></circle><path d="M42 32l-10-10-16 16"></path><path d="M28 38l8-8 6 6"></path></svg>
-            <h3>Drop images here or click to browse</h3>
-            <p>Up to 10 files total. Accepted formats: JPG, JPEG, PNG, HEIF.</p>
-            <button class="upload-button" type="button" id="browseBtn">Choose Photos</button>
+            <h3>Add your images one at a time or all at once</h3>
+            <p>You can submit 1 to 10 files total. Accepted formats: JPG, JPEG, PNG, HEIF.</p>
+            <button class="upload-button" type="button" id="browseBtn">Add Photos</button>
           </div>
           <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.heif,.heic" multiple hidden>
           <div id="uploadList" class="upload-list"></div>
@@ -396,7 +410,7 @@ body {
         <div class="checkbox-row" id="permissionField">
           <label>
             <input type="checkbox" id="permission" name="permission" required>
-            <span class="checkbox-copy"><strong>Yes, you can share these images</strong> with Summit attendees, models, and the locations we visited, and KelbyOne may also use them to showcase the event and promote the photographers’ work with credit where credit is due.</span>
+            <span class="checkbox-copy"><strong>Yes, you can share these images</strong> with Summit attendees, models, and the locations we visited, and KelbyOne may select the best images to include in a gallery shared with the membership. KelbyOne may also use them to showcase the event and promote the photographers’ work with credit where credit is due.</span>
           </label>
           <div class="error-msg">Please confirm permission so we can accept your images.</div>
         </div>
@@ -424,7 +438,7 @@ body {
 </main>
 
 <footer class="footer">
-  By submitting, you confirm these are your images and that you’re giving KelbyOne permission to share them with the group, models, and locations, and to use them to promote the event and your work with attribution.
+  By submitting, you confirm these are your images and that you’re giving KelbyOne permission to share them with the group, models, and locations, to include selected images in a member gallery, and to use them to promote the event and your work with attribution.
 </footer>
 
 <script>
@@ -481,7 +495,7 @@ body {
     files.forEach(function(file) {
       if (selectedFiles.length >= MAX_FILES) return;
       if (!isAcceptedFile(file)) return;
-      selectedFiles.push({ file: file, description: '', id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()) });
+      selectedFiles.push({ file: file, title: '', description: '', id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()) });
     });
     renderFiles();
   }
@@ -510,8 +524,16 @@ body {
       meta.querySelector('.file-name').textContent = item.file.name;
       meta.querySelector('.file-sub').textContent = formatFileSize(item.file.size);
 
+      var title = document.createElement('input');
+      title.type = 'text';
+      title.placeholder = 'Optional image title';
+      title.value = item.title;
+      title.style.marginBottom = '0.55rem';
+      title.addEventListener('input', function() { item.title = title.value; });
+      meta.appendChild(title);
+
       var notes = document.createElement('textarea');
-      notes.placeholder = 'Optional note about this image';
+      notes.placeholder = 'Optional image description';
       notes.value = item.description;
       notes.addEventListener('input', function() { item.description = notes.value; });
       meta.appendChild(notes);
@@ -532,7 +554,7 @@ body {
       uploadList.appendChild(row);
     });
 
-    uploadHelper.textContent = selectedFiles.length + ' of ' + MAX_FILES + ' files selected.';
+    uploadHelper.textContent = selectedFiles.length + ' of ' + MAX_FILES + ' images selected. You can add more photos until you reach 10.';
   }
 
   async function handleSubmit(e) {
@@ -554,6 +576,7 @@ body {
         progressFill.style.width = String(10 + Math.round((i / selectedFiles.length) * 70)) + '%';
         images.push({
           filename: selectedFiles[i].file.name,
+          title: selectedFiles[i].title,
           description: selectedFiles[i].description,
           data: await fileToDataURL(selectedFiles[i].file)
         });
@@ -567,6 +590,9 @@ body {
         email: document.getElementById('email').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         notes: document.getElementById('notes').value.trim(),
+        instagram: document.getElementById('instagram').value.trim(),
+        twitter: document.getElementById('twitter').value.trim(),
+        facebook: document.getElementById('facebook').value.trim(),
         permission: document.getElementById('permission').checked,
         images: images
       };

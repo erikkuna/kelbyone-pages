@@ -11,8 +11,8 @@
  * 7. Paste the deployment URL into summit/index.html ENDPOINT
  */
 
-var FOLDER_ID = 'PASTE_GOOGLE_DRIVE_FOLDER_ID_HERE';
-var SHEET_ID  = 'PASTE_GOOGLE_SHEET_ID_HERE';
+var FOLDER_ID = '1FGbXbidrqCbzXycPd1lFpC60nbx_weR1';
+var SHEET_ID  = '1QkDO-DdQhVjg9ajTBL6GOPZdhNapfj-P-StQWj7MBkg';
 var MAX_FILES = 10;
 
 function doPost(e) {
@@ -23,6 +23,9 @@ function doPost(e) {
     var email = payload.email || '';
     var phone = payload.phone || '';
     var notes = payload.notes || '';
+    var instagram = payload.instagram || '';
+    var twitter = payload.twitter || '';
+    var facebook = payload.facebook || '';
     var permission = !!payload.permission;
     var images = payload.images || [];
     var timestamp = new Date();
@@ -37,10 +40,10 @@ function doPost(e) {
 
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        'Timestamp', 'Name', 'Email', 'Phone', 'Permission Granted', 'Notes',
-        'Submission Folder URL', 'File Count', 'File #', 'Filename', 'Description', 'File URL'
+        'Timestamp', 'Name', 'Email', 'Phone', 'Instagram', 'X / Twitter', 'Facebook', 'Permission Granted', 'Notes',
+        'Submission Folder URL', 'File Count', 'File #', 'Filename', 'Image Title', 'Description', 'File URL'
       ]);
-      sheet.getRange(1, 1, 1, 12).setFontWeight('bold');
+      sheet.getRange(1, 1, 1, 16).setFontWeight('bold');
     }
 
     var safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
@@ -57,12 +60,16 @@ function doPost(e) {
         name,
         email,
         phone,
+        instagram,
+        twitter,
+        facebook,
         permission ? 'Yes' : 'No',
         notes,
         folderUrl,
         images.length,
         index + 1,
         img.filename || '',
+        img.title || '',
         img.description || '',
         result.url
       ]);
@@ -121,7 +128,7 @@ function sendConfirmationEmail(email, name, count) {
   var subject = 'KelbyOne Summit — Photos Received';
   var body = 'Hi ' + name + ',\n\n'
     + 'Thanks for sharing your Summit photos with us. We received ' + count + ' image' + (count === 1 ? '' : 's') + '.\n\n'
-    + 'We appreciate you giving us permission to share them with the group, models, and locations, and to use them to promote the event and your work with proper credit.\n\n'
+    + 'We appreciate you giving us permission to share them with the group, models, and locations, to consider them for a member gallery of the best work, and to use them to promote the event and your work with proper credit.\n\n'
     + 'Thanks again,\n'
     + 'KelbyOne';
 
