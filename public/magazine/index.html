@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KelbyOne Magazine, Submit Your Work to Be Featured</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-primary: #080808;
+  --bg-secondary: #121212;
+  --bg-card: rgba(18,18,18,0.9);
+  --bg-input: #1b1b1b;
+  --bg-hover: #232323;
+  --border: rgba(255,255,255,0.10);
+  --text-primary: #f5f1e8;
+  --text-secondary: #b8b1a4;
+  --text-muted: #7f7768;
+  --accent: #d6a34a;
+  --accent-hover: #e1b86f;
+  --accent-glow: rgba(214,163,74,0.18);
+  --success: #2ecc71;
+  --success-bg: rgba(46,204,113,0.10);
+  --error: #e74c3c;
+  --error-bg: rgba(231,76,60,0.10);
+  --radius: 10px;
+  --radius-lg: 16px;
+  --transition: 0.2s ease;
+}
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(circle at top center, rgba(214,163,74,0.12), transparent 35%),
+    linear-gradient(180deg, #120f09 0%, #080808 46%, #0b0b0b 100%);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+.header {
+  text-align: center;
+  padding: 4rem 1.5rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(214,163,74,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.header-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #14110b;
+  background: linear-gradient(135deg, #f0c878 0%, var(--accent) 100%);
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+.header h1 {
+  font-size: clamp(2.3rem, 7vw, 4.6rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+.header h1 span {
+  display: block;
+  background: linear-gradient(180deg, #fff6df 0%, #d6a34a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.header p {
+  font-size: clamp(1rem, 2.2vw, 1.1rem);
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin: 0 auto;
+}
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+}
+.form-shell {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.form-intro {
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+}
+.form-intro p { color: var(--text-secondary); font-size: 0.95rem; }
+.form-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.form-section:last-of-type { border-bottom: none; }
+.form-section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.grid-2 {
+  display: grid;
+  gap: 1rem;
+}
+.field { margin-bottom: 1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin-bottom: 0.45rem;
+}
+.field .optional { color: var(--text-muted); font-weight: 400; font-size: 0.82rem; }
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="tel"],
+.field textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 0.85rem 1rem;
+  font-family: inherit;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.field input::placeholder,
+.field textarea::placeholder { color: var(--text-muted); }
+.field textarea { resize: vertical; min-height: 110px; }
+.field .error-msg {
+  font-size: 0.8rem;
+  color: var(--error);
+  margin-top: 0.35rem;
+  display: none;
+}
+.field.has-error input,
+.field.has-error textarea,
+.checkbox-row.has-error {
+  border-color: var(--error);
+}
+.field.has-error .error-msg,
+.checkbox-row.has-error .error-msg { display: block; }
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 18px;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.01);
+  transition: border-color var(--transition), background var(--transition);
+}
+.upload-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+.upload-cta {
+  text-align: center;
+  padding: 1rem 0 1.25rem;
+}
+.upload-icon {
+  width: 52px;
+  height: 52px;
+  opacity: 0.55;
+  margin: 0 auto 0.75rem;
+}
+.upload-cta h3 { font-size: 1.05rem; margin-bottom: 0.35rem; }
+.upload-cta p { color: var(--text-secondary); font-size: 0.9rem; }
+.upload-button {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.2rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f0c878 0%, var(--accent) 100%);
+  color: #14110b;
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.upload-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+.upload-item {
+  display: grid;
+  grid-template-columns: 88px 1fr auto;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.02);
+}
+.thumb {
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+  background: #000;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.file-meta { min-width: 0; }
+.file-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+.file-meta textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  padding: 0.65rem 0.75rem;
+  font-family: inherit;
+}
+.remove-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.helper-note {
+  margin-top: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+.checkbox-row {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  background: rgba(255,255,255,0.02);
+}
+.checkbox-row label {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.checkbox-row input[type="checkbox"] {
+  margin-top: 0.2rem;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+.checkbox-copy {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+.checkbox-copy strong { color: var(--text-primary); }
+.progress-container { display: none; padding: 0 1.5rem 1.25rem; }
+.progress-container.visible { display: block; }
+.progress-bar-track { width: 100%; height: 8px; background: var(--bg-input); border-radius: 999px; overflow: hidden; margin-bottom: 0.5rem; }
+.progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f0c878 0%, var(--accent) 100%); border-radius: 999px; transition: width 0.25s ease; }
+.progress-text { color: var(--text-secondary); font-size: 0.84rem; text-align: center; }
+.status-message { display: none; margin: 1.25rem 1.5rem 0; padding: 1rem 1.1rem; border-radius: 14px; text-align: center; }
+.status-message.visible { display: block; }
+.status-message.success { background: var(--success-bg); border: 1px solid rgba(46,204,113,0.26); color: var(--success); }
+.status-message.error { background: var(--error-bg); border: 1px solid rgba(231,76,60,0.26); color: var(--error); }
+.status-message h3 { margin-bottom: 0.3rem; font-size: 1rem; }
+.submit-wrap { padding: 1.5rem; }
+.submit-btn {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, #f0c878 0%, var(--accent) 100%);
+  color: #14110b;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.footer {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+@media (min-width: 700px) {
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .form-intro, .form-section, .submit-wrap { padding-left: 2rem; padding-right: 2rem; }
+  .progress-container { padding-left: 2rem; padding-right: 2rem; }
+}
+@media (max-width: 640px) {
+  .upload-item { grid-template-columns: 72px 1fr; }
+  .remove-btn { grid-column: 2; justify-self: end; }
+  .thumb { width: 72px; height: 72px; }
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-badge">KelbyOne Magazine</div>
+  <h1>Get Featured in <span>KelbyOne Magazine</span></h1>
+  <p>Master of Photography members and KelbyOne members — submit 1 to 5 of your best images to be considered for our magazine, distributed to members and the wider photography community. Credit always given.</p>
+</header>
+
+<main class="container">
+  <div class="form-shell">
+    <div class="form-intro">
+      <p>JPEG, JPG, PNG, and HEIF only. Submit your strongest work — the images you'd be proud to see featured in print and online. You can submit as few as 1 image or as many as 5.</p>
+    </div>
+
+    <form id="magazineForm" novalidate>
+      <div class="form-section">
+        <div class="form-section-title">Photographer Info</div>
+        <div class="grid-2">
+          <div class="field" id="nameField">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your full name" required autocomplete="name">
+            <div class="error-msg">Please enter your name.</div>
+          </div>
+          <div class="field" id="emailField">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+            <div class="error-msg">Please enter a valid email address.</div>
+          </div>
+        </div>
+        <div class="field" id="locationField">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location" placeholder="City, State / Country" required autocomplete="address-level2">
+          <div class="error-msg">Please enter your location.</div>
+        </div>
+        <div class="field">
+          <label for="social">Social handles &amp; website <span class="optional">(optional)</span></label>
+          <textarea id="social" name="social" placeholder="Example: @yourhandle on Instagram, @yourhandle on X, yourwebsite.com"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Upload Your Images</div>
+        <div id="uploadZone" class="upload-zone">
+          <div class="upload-cta">
+            <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="36" height="28" rx="3"></rect><circle cx="18" cy="22" r="4"></circle><path d="M42 32l-10-10-16 16"></path><path d="M28 38l8-8 6 6"></path></svg>
+            <h3>Add your images one at a time or all at once</h3>
+            <p>You can submit 1 to 5 files total. Accepted formats: JPG, JPEG, PNG, HEIF.</p>
+            <button class="upload-button" type="button" id="browseBtn">Add Photos</button>
+          </div>
+          <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.heif,.heic" multiple hidden>
+          <div id="uploadList" class="upload-list"></div>
+          <div class="helper-note" id="uploadHelper">0 of 5 files selected.</div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Permission</div>
+        <div class="checkbox-row" id="permissionField">
+          <label>
+            <input type="checkbox" id="permission" name="permission" required>
+            <span class="checkbox-copy"><strong>Yes, KelbyOne can use these images</strong> in KelbyOne Magazine and to promote the magazine and the photographer's work across KelbyOne membership channels. Credit will always be given to the photographer.</span>
+          </label>
+          <div class="error-msg">Please confirm permission so we can accept your images.</div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar-track"><div id="progressFill" class="progress-bar-fill"></div></div>
+        <div id="progressText" class="progress-text">Uploading...</div>
+      </div>
+
+      <div id="statusSuccess" class="status-message success">
+        <h3>Thanks, your images were received.</h3>
+        <p>We've got your magazine submission and will keep your work credited to you.</p>
+      </div>
+      <div id="statusError" class="status-message error">
+        <h3>Upload failed</h3>
+        <p id="errorDetail">Something went wrong. Please try again.</p>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" class="submit-btn" id="submitBtn">Submit for Magazine</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  By submitting, you confirm these are your images and that you're giving KelbyOne permission to feature them in KelbyOne Magazine and to promote the magazine and your work across KelbyOne membership channels with attribution.
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  var ENDPOINT = 'REPLACE_WITH_APPS_SCRIPT_DEPLOYMENT_URL';
+  var MAX_FILES = 5;
+  var ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/heif', 'image/heic'];
+  var selectedFiles = [];
+
+  var form = document.getElementById('magazineForm');
+  var fileInput = document.getElementById('fileInput');
+  var browseBtn = document.getElementById('browseBtn');
+  var uploadZone = document.getElementById('uploadZone');
+  var uploadList = document.getElementById('uploadList');
+  var uploadHelper = document.getElementById('uploadHelper');
+  var progressContainer = document.getElementById('progressContainer');
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  var statusSuccess = document.getElementById('statusSuccess');
+  var statusError = document.getElementById('statusError');
+  var errorDetail = document.getElementById('errorDetail');
+  var submitBtn = document.getElementById('submitBtn');
+
+  browseBtn.addEventListener('click', function() { fileInput.click(); });
+  fileInput.addEventListener('change', function(e) { addFiles(e.target.files); fileInput.value = ''; });
+
+  ['dragenter', 'dragover'].forEach(function(eventName) {
+    uploadZone.addEventListener(eventName, function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(function(eventName) {
+    uploadZone.addEventListener(eventName, function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.remove('drag-over');
+    });
+  });
+
+  uploadZone.addEventListener('drop', function(e) {
+    addFiles(e.dataTransfer.files);
+  });
+
+  form.addEventListener('submit', handleSubmit);
+
+  function addFiles(fileList) {
+    hideStatus();
+    var files = Array.from(fileList || []);
+    files.forEach(function(file) {
+      if (selectedFiles.length >= MAX_FILES) return;
+      if (!isAcceptedFile(file)) return;
+      selectedFiles.push({ file: file, title: '', description: '', id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()) });
+    });
+    renderFiles();
+  }
+
+  function isAcceptedFile(file) {
+    if (ACCEPTED_TYPES.indexOf(file.type) !== -1) return true;
+    var lower = (file.name || '').toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.heif', '.heic'].some(function(ext) { return lower.endsWith(ext); });
+  }
+
+  function renderFiles() {
+    uploadList.innerHTML = '';
+    selectedFiles.forEach(function(item, index) {
+      var row = document.createElement('div');
+      row.className = 'upload-item';
+
+      var thumb = document.createElement('img');
+      thumb.className = 'thumb';
+      thumb.alt = item.file.name;
+      thumb.src = URL.createObjectURL(item.file);
+      thumb.onload = function() { URL.revokeObjectURL(thumb.src); };
+
+      var meta = document.createElement('div');
+      meta.className = 'file-meta';
+      meta.innerHTML = '<div class="file-name"></div><div class="file-sub"></div>';
+      meta.querySelector('.file-name').textContent = item.file.name;
+      meta.querySelector('.file-sub').textContent = formatFileSize(item.file.size);
+
+      var title = document.createElement('input');
+      title.type = 'text';
+      title.placeholder = 'Optional image title';
+      title.value = item.title;
+      title.style.marginBottom = '0.55rem';
+      title.addEventListener('input', function() { item.title = title.value; });
+      meta.appendChild(title);
+
+      var notes = document.createElement('textarea');
+      notes.placeholder = 'Optional image description / story behind the shot';
+      notes.value = item.description;
+      notes.addEventListener('input', function() { item.description = notes.value; });
+      meta.appendChild(notes);
+
+      var remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'remove-btn';
+      remove.setAttribute('aria-label', 'Remove file');
+      remove.innerHTML = '&times;';
+      remove.addEventListener('click', function() {
+        selectedFiles.splice(index, 1);
+        renderFiles();
+      });
+
+      row.appendChild(thumb);
+      row.appendChild(meta);
+      row.appendChild(remove);
+      uploadList.appendChild(row);
+    });
+
+    uploadHelper.textContent = selectedFiles.length + ' of ' + MAX_FILES + ' images selected. You can add more photos until you reach ' + MAX_FILES + '.';
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    hideStatus();
+
+    var isValid = validateForm();
+    if (!isValid) return;
+
+    submitBtn.disabled = true;
+    progressContainer.classList.add('visible');
+    progressFill.style.width = '5%';
+    progressText.textContent = 'Preparing files...';
+
+    try {
+      var images = [];
+      for (var i = 0; i < selectedFiles.length; i++) {
+        progressText.textContent = 'Encoding file ' + (i + 1) + ' of ' + selectedFiles.length + '...';
+        progressFill.style.width = String(10 + Math.round((i / selectedFiles.length) * 70)) + '%';
+        images.push({
+          filename: selectedFiles[i].file.name,
+          title: selectedFiles[i].title,
+          description: selectedFiles[i].description,
+          data: await fileToDataURL(selectedFiles[i].file)
+        });
+      }
+
+      progressText.textContent = 'Submitting your images...';
+      progressFill.style.width = '90%';
+
+      if (!ENDPOINT || ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_DEPLOYMENT_URL') {
+        throw new Error('Upload service is not connected yet. Please try again soon.');
+      }
+
+      var payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        social: document.getElementById('social').value.trim(),
+        permission: document.getElementById('permission').checked,
+        images: images
+      };
+
+      var response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+
+      var raw = await response.text();
+      var result;
+      try {
+        result = JSON.parse(raw);
+      } catch (parseErr) {
+        if (raw && /Sign in - Google Accounts|ServiceLogin|accounts\.google\.com/i.test(raw)) {
+          throw new Error('The upload service is asking for Google sign-in. The Apps Script web app needs to be redeployed with public access.');
+        }
+        throw new Error('The upload service returned an invalid response.');
+      }
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Upload failed');
+      }
+
+      progressFill.style.width = '100%';
+      progressText.textContent = 'Upload complete';
+      statusSuccess.classList.add('visible');
+      form.reset();
+      selectedFiles = [];
+      renderFiles();
+    } catch (err) {
+      errorDetail.textContent = err.message || 'Something went wrong. Please try again.';
+      statusError.classList.add('visible');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  function validateForm() {
+    var valid = true;
+    clearErrors();
+
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var location = document.getElementById('location').value.trim();
+    var permission = document.getElementById('permission').checked;
+
+    if (!name) {
+      document.getElementById('nameField').classList.add('has-error');
+      valid = false;
+    }
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      document.getElementById('emailField').classList.add('has-error');
+      valid = false;
+    }
+
+    if (!location) {
+      document.getElementById('locationField').classList.add('has-error');
+      valid = false;
+    }
+
+    if (!selectedFiles.length) {
+      errorDetail.textContent = 'Please add at least one image.';
+      statusError.classList.add('visible');
+      valid = false;
+    }
+
+    if (!permission) {
+      document.getElementById('permissionField').classList.add('has-error');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  function clearErrors() {
+    ['nameField', 'emailField', 'locationField', 'permissionField'].forEach(function(id) {
+      document.getElementById(id).classList.remove('has-error');
+    });
+  }
+
+  function hideStatus() {
+    statusSuccess.classList.remove('visible');
+    statusError.classList.remove('visible');
+  }
+
+  function fileToDataURL(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() { resolve(reader.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+})();
+</script>
+</body>
+</html>
