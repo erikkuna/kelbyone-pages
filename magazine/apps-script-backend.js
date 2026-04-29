@@ -25,6 +25,7 @@ function doPost(e) {
     var social = payload.social || '';
     var permission = !!payload.permission;
     var images = payload.images || [];
+    var headshot = payload.headshot || null;
     var timestamp = new Date();
 
     if (!name || !email) throw new Error('Name and email are required.');
@@ -32,6 +33,7 @@ function doPost(e) {
     if (!permission) throw new Error('Permission checkbox is required.');
     if (!images.length) throw new Error('At least one image is required.');
     if (images.length > MAX_FILES) throw new Error('Too many files uploaded. Max is ' + MAX_FILES + '.');
+    if (!headshot || !headshot.data) throw new Error('Headshot is required.');
 
     var folder = DriveApp.getFolderById(FOLDER_ID);
     var sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
@@ -40,9 +42,10 @@ function doPost(e) {
       sheet.appendRow([
         'Timestamp', 'Name', 'Email', 'Location', 'Social / Website',
         'Permission Granted', 'Submission Folder URL', 'File Count',
-        'File #', 'Filename', 'Image Title', 'Description', 'File URL'
+        'File #', 'Filename', 'Image Title', 'Description', 'File URL',
+        'Headshot Filename', 'Headshot URL'
       ]);
-      sheet.getRange(1, 1, 1, 13).setFontWeight('bold');
+      sheet.getRange(1, 1, 1, 15).setFontWeight('bold');
     }
 
     var safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
@@ -51,6 +54,9 @@ function doPost(e) {
     );
 
     var folderUrl = submissionFolder.getUrl();
+
+    var headshotFilename = buildHeadshotFilename(headshot.filename || 'headshot.jpg', name, location);
+    var headshotResult = saveFile(submissionFolder, headshot.data, headshotFilename);
 
     images.forEach(function(img, index) {
       var result = saveFile(submissionFolder, img.data, img.filename || ('image-' + (index + 1) + '.jpg'));
@@ -67,7 +73,9 @@ function doPost(e) {
         img.filename || '',
         img.title || '',
         img.description || '',
-        result.url
+        result.url,
+        headshotFilename,
+        headshotResult.url
       ]);
     });
 
@@ -129,6 +137,23 @@ function sendConfirmationEmail(email, name, count) {
     + 'KelbyOne';
 
   MailApp.sendEmail(email, subject, body);
+}
+
+function buildHeadshotFilename(originalName, name, location) {
+  var dotIndex = originalName.lastIndexOf('.');
+  var base = dotIndex > 0 ? originalName.substring(0, dotIndex) : originalName;
+  var ext  = dotIndex > 0 ? originalName.substring(dotIndex) : '';
+  var safeName = sanitizeForFilename(name);
+  var safeLocation = sanitizeForFilename(location);
+  return base + '_' + safeName + '_' + safeLocation + ext;
+}
+
+function sanitizeForFilename(value) {
+  return String(value || '')
+    .replace(/[\/\\:*?"<>|]/g, '')
+    .replace(/[,]+/g, '')
+    .trim()
+    .replace(/\s+/g, '_');
 }
 
 function formatTimestamp(date) {
