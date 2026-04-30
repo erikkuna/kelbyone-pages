@@ -154,7 +154,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         <div class="upload-slot-empty" onclick="triggerUpload()">
           <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="36" height="28" rx="3"/><circle cx="18" cy="22" r="4"/><path d="M42 32l-10-10-16 16"/><path d="M28 38l8-8 6 6"/></svg>
           <div class="upload-label">Drop your file here or click to browse</div>
-          <div class="upload-hint">RAW files: DNG, CR3, CR2, NEF, ARW, RAF, ORF, RW2 &middot; Also: JPG, PNG, TIFF &middot; Max 50 MB</div>
+          <div class="upload-hint">RAW files: DNG, CR3, CR2, NEF, ARW, RAF, ORF, RW2 &middot; Also: JPG, PNG, TIFF &middot; Max 60 MB</div>
         </div>
         <div class="upload-slot-filled">
           <div class="preview-wrapper">
@@ -218,7 +218,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   // ============================================================
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxwQTEFO8xqNKVl7fMwBslzKbxGB-wD7EkRul6CB9QvSjxcb7oEJY6BF-DRzV_Y5-OI/exec';
 
-  var MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB for RAW files
+  var MAX_FILE_SIZE = 60 * 1024 * 1024; // 60 MB for RAW files
   var ALLOWED_EXTENSIONS = ['jpg','jpeg','png','tiff','tif','dng','cr3','cr2','nef','arw','raf','orf','rw2','heic','heif','webp'];
   var IMAGE_EXTENSIONS = ['jpg','jpeg','png','tiff','tif','heic','heif','webp'];
   var uploadedFile = null; // { file, dataUrl, name, ext }
@@ -251,7 +251,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      showError('File too large. Maximum size is 50 MB.');
+      showError('File too large. Maximum size is 60 MB.');
       return;
     }
 
