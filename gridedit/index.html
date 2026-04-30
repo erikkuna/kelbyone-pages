@@ -373,9 +373,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
           showError(result.error || 'Submission failed. Please try again.');
         }
       })
-      .catch(function() {
+      .catch(function(err) {
         hideProgress(); setSubmitting(false);
-        showError('Network error. Check your connection and try again.');
+        var detail = err && err.message ? err.message : 'Network error. Check your connection and try again.';
+        showError(detail);
       });
   });
 
@@ -409,9 +410,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         }
       };
 
-      xhr.onerror = reject;
-      xhr.ontimeout = reject;
-      xhr.timeout = 180000;
+      xhr.onerror = function() {
+        reject(new Error('Upload connection failed. This can happen with larger RAW files if Google Apps Script rejects the upload before it returns a response.'));
+      };
+      xhr.ontimeout = function() {
+        reject(new Error('Upload timed out. Please try a smaller file or a faster connection.'));
+      };
+      xhr.onabort = function() {
+        reject(new Error('Upload was canceled before it finished.'));
+      };
+      xhr.timeout = 300000;
 
       xhr.send(body);
     });
