@@ -154,7 +154,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         <div class="upload-slot-empty" onclick="triggerUpload()">
           <svg class="upload-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="36" height="28" rx="3"/><circle cx="18" cy="22" r="4"/><path d="M42 32l-10-10-16 16"/><path d="M28 38l8-8 6 6"/></svg>
           <div class="upload-label">Drop your file here or click to browse</div>
-          <div class="upload-hint">RAW files: DNG, CR3, CR2, NEF, ARW, RAF, ORF, RW2 &middot; Also: JPG, PNG, TIFF &middot; Max 60 MB</div>
+          <div class="upload-hint">RAW files: DNG, CR3, CR2, NEF, ARW, RAF, ORF, RW2 &middot; Also: JPG, PNG, TIFF &middot; Max 100 MB</div>
         </div>
         <div class="upload-slot-filled">
           <div class="preview-wrapper">
@@ -218,10 +218,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
   // ============================================================
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxwQTEFO8xqNKVl7fMwBslzKbxGB-wD7EkRul6CB9QvSjxcb7oEJY6BF-DRzV_Y5-OI/exec';
 
-  var MAX_FILE_SIZE = 60 * 1024 * 1024; // 60 MB for RAW files
+  var MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB with direct R2 upload
   var ALLOWED_EXTENSIONS = ['jpg','jpeg','png','tiff','tif','dng','cr3','cr2','nef','arw','raf','orf','rw2','heic','heif','webp'];
   var IMAGE_EXTENSIONS = ['jpg','jpeg','png','tiff','tif','heic','heif','webp'];
-  var uploadedFile = null; // { file, dataUrl, name, ext }
+  var uploadedFile = null; // { file, name, ext, previewUrl }
 
   var form = document.getElementById('editForm');
   var submitBtn = document.getElementById('submitBtn');
@@ -251,32 +251,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      showError('File too large. Maximum size is 60 MB.');
+      showError('File too large. Maximum size is 100 MB.');
       return;
     }
 
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      uploadedFile = { file: file, dataUrl: e.target.result, name: file.name, ext: ext };
-      slot.classList.add('has-file');
-      document.getElementById('filename0').textContent = file.name + ' (' + formatSize(file.size) + ')';
+    if (uploadedFile && uploadedFile.previewUrl) URL.revokeObjectURL(uploadedFile.previewUrl);
 
-      // Show preview for images, placeholder for RAW
-      if (IMAGE_EXTENSIONS.indexOf(ext) !== -1) {
-        document.getElementById('preview0').src = e.target.result;
-        document.getElementById('preview0').style.display = 'block';
-        document.getElementById('rawPlaceholder').style.display = 'none';
-      } else {
-        document.getElementById('preview0').style.display = 'none';
-        document.getElementById('rawPlaceholder').style.display = 'flex';
-        document.getElementById('rawExt').textContent = '.' + ext;
-      }
-      hideStatus();
-    };
-    reader.readAsDataURL(file);
+    var previewUrl = IMAGE_EXTENSIONS.indexOf(ext) !== -1 ? URL.createObjectURL(file) : '';
+    uploadedFile = { file: file, name: file.name, ext: ext, previewUrl: previewUrl };
+    slot.classList.add('has-file');
+    document.getElementById('filename0').textContent = file.name + ' (' + formatSize(file.size) + ')';
+
+    // Show preview for images, placeholder for RAW
+    if (previewUrl) {
+      document.getElementById('preview0').src = previewUrl;
+      document.getElementById('preview0').style.display = 'block';
+      document.getElementById('rawPlaceholder').style.display = 'none';
+    } else {
+      document.getElementById('preview0').style.display = 'none';
+      document.getElementById('rawPlaceholder').style.display = 'flex';
+      document.getElementById('rawExt').textContent = '.' + ext;
+    }
+    hideStatus();
   }
 
   window.removeFile = function() {
+    if (uploadedFile && uploadedFile.previewUrl) URL.revokeObjectURL(uploadedFile.previewUrl);
     uploadedFile = null;
     slot.classList.remove('has-file');
     document.getElementById('fileInput0').value = '';
@@ -348,29 +348,41 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     setSubmitting(true);
     setProgress(0, 'Preparing submission...');
 
-    var payload = {
-      name: document.getElementById('name').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      editNotes: document.getElementById('editNotes').value.trim(),
-      images: [{
-        data: uploadedFile.dataUrl,
-        mimeType: uploadedFile.file.type || 'application/octet-stream',
-        filename: uploadedFile.name,
-        description: document.getElementById('desc0').value.trim()
-      }]
-    };
+    var nameVal = document.getElementById('name').value.trim();
+    var emailVal = document.getElementById('email').value.trim();
+    var phoneVal = document.getElementById('phone').value.trim();
+    var notesVal = document.getElementById('editNotes').value.trim();
+    var descVal = document.getElementById('desc0').value.trim();
 
     setProgress(1, 'Starting upload... 0%');
 
-    uploadSubmission(JSON.stringify(payload), uploadedFile.file.size)
+    uploadFileToR2(uploadedFile.file, emailVal)
+      .then(function(uploadResult) {
+        setProgress(96, 'File uploaded — saving submission...');
+
+        var payload = {
+          name: nameVal,
+          email: emailVal,
+          phone: phoneVal,
+          editNotes: notesVal,
+          images: [{
+            url: uploadResult.downloadUrl ? new URL(uploadResult.downloadUrl, window.location.origin).href : '',
+            key: uploadResult.key || '',
+            mimeType: uploadResult.mimeType || uploadedFile.file.type || 'application/octet-stream',
+            filename: uploadResult.filename || uploadedFile.name,
+            description: descVal
+          }]
+        };
+
+        return saveSubmissionMetadata(JSON.stringify(payload));
+      })
       .then(function(result) {
         if (result.success) {
           setProgress(100, 'Upload complete — submission received!');
           setTimeout(function() { hideProgress(); setSubmitting(false); showSuccess(); resetForm(); }, 800);
         } else {
           hideProgress(); setSubmitting(false);
-          showError(result.error || 'Submission failed. Please try again.');
+          showError(result.error || result.message || 'Submission failed. Please try again.');
         }
       })
       .catch(function(err) {
@@ -380,47 +392,67 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
       });
   });
 
-  function uploadSubmission(body, originalFileSize) {
+  function uploadFileToR2(file, email) {
     return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
+      var params = new URLSearchParams({ filename: file.name, email: email });
 
-      xhr.open('POST', ENDPOINT, true);
-      xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+      xhr.open('POST', '/api/gridedit-upload?' + params.toString(), true);
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.setRequestHeader('X-File-Name', file.name);
+      xhr.setRequestHeader('X-Email', email);
 
       xhr.upload.onprogress = function(e) {
         if (!e.lengthComputable) {
-          setProgress(20, 'Uploading photo (' + formatSize(originalFileSize) + ')...');
+          setProgress(20, 'Uploading photo (' + formatSize(file.size) + ')...');
           return;
         }
 
-        // Reserve the last 5% for Apps Script/Drive processing after the bytes arrive.
+        // Reserve the last 5% for recording the submission in the sheet.
         var pct = Math.min(95, Math.max(1, (e.loaded / e.total) * 95));
         setProgress(pct, 'Uploading photo... ' + Math.round(pct) + '%');
       };
 
       xhr.onload = function() {
-        setProgress(96, 'Upload received — processing submission...');
+        var result;
+        try { result = JSON.parse(xhr.responseText || '{}'); } catch(e) { result = {}; }
+
+        if (xhr.status >= 200 && xhr.status < 300 && result.success) {
+          resolve(result);
+        } else {
+          reject(new Error(result.error || 'Upload failed with status ' + xhr.status));
+        }
+      };
+
+      xhr.onerror = function() { reject(new Error('Upload connection failed. Please check your connection and try again.')); };
+      xhr.ontimeout = function() { reject(new Error('Upload timed out. Please try again on a faster connection.')); };
+      xhr.onabort = function() { reject(new Error('Upload was canceled before it finished.')); };
+      xhr.timeout = 600000;
+
+      xhr.send(file);
+    });
+  }
+
+  function saveSubmissionMetadata(body) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', ENDPOINT, true);
+      xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+
+      xhr.onload = function() {
         var result;
         try { result = JSON.parse(xhr.responseText || '{}'); } catch(e) { result = {}; }
 
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(result);
         } else {
-          reject(new Error('Upload failed with status ' + xhr.status));
+          reject(new Error(result.error || result.message || 'Submission save failed with status ' + xhr.status));
         }
       };
 
-      xhr.onerror = function() {
-        reject(new Error('Upload connection failed. This can happen with larger RAW files if Google Apps Script rejects the upload before it returns a response.'));
-      };
-      xhr.ontimeout = function() {
-        reject(new Error('Upload timed out. Please try a smaller file or a faster connection.'));
-      };
-      xhr.onabort = function() {
-        reject(new Error('Upload was canceled before it finished.'));
-      };
-      xhr.timeout = 300000;
-
+      xhr.onerror = function() { reject(new Error('File uploaded, but saving the submission failed. Please contact KelbyOne.')); };
+      xhr.ontimeout = function() { reject(new Error('File uploaded, but saving the submission timed out. Please contact KelbyOne.')); };
+      xhr.timeout = 120000;
       xhr.send(body);
     });
   }
