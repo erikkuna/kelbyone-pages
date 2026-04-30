@@ -4,3 +4,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "./public"
+
+[[r2_buckets]]
+binding = "GRID_EDIT_UPLOADS"
+bucket_name = "grid-edit-uploads"

@@ -49,10 +49,20 @@ function doPost(e) {
 
     if (imageData.length > 0) {
       var img = imageData[0];
-      var result = saveFile(submissionFolder, img.data, img.filename || 'photo.jpg');
-      fileUrl = result.url;
       filename = img.filename || '';
       description = img.description || '';
+
+      // New faster upload path: file is already stored in Cloudflare R2.
+      // Apps Script only logs the link instead of receiving/decoding a huge base64 payload.
+      if (img.url) {
+        fileUrl = img.url;
+      } else if (img.key) {
+        fileUrl = img.key;
+      } else if (img.data) {
+        // Legacy fallback for old form submissions.
+        var result = saveFile(submissionFolder, img.data, img.filename || 'photo.jpg');
+        fileUrl = result.url;
+      }
     }
 
     // Log to sheet
