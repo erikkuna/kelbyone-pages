@@ -38,13 +38,7 @@ function doPost(e) {
     var folder = DriveApp.getFolderById(FOLDER_ID);
     var sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
 
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        'Timestamp', 'Name', 'Email', 'Phone', 'Instagram', 'X / Twitter', 'Facebook', 'Permission Granted', 'Notes',
-        'Submission Folder URL', 'File Count', 'File #', 'Filename', 'Image Title', 'Description', 'File URL'
-      ]);
-      sheet.getRange(1, 1, 1, 16).setFontWeight('bold');
-    }
+    ensureSheetHeaders(sheet);
 
     var safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
     var submissionFolder = null;
@@ -113,6 +107,21 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({ success: false, message: error.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+function ensureSheetHeaders(sheet) {
+  var headers = [
+    'Timestamp', 'Name', 'Email', 'Phone', 'Social', 'X / Twitter', 'Facebook', 'Permission Granted', 'Notes',
+    'Submission Folder URL', 'File Count', 'File #', 'Filename', 'Image Title', 'Description', 'File URL'
+  ];
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  } else {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
 }
 
 function doGet() {
