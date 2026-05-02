@@ -23,7 +23,7 @@ function doPost(e) {
     var email = payload.email || '';
     var phone = payload.phone || '';
     var notes = payload.notes || '';
-    var instagram = payload.instagram || '';
+    var social = payload.social || payload.instagram || '';
     var twitter = payload.twitter || '';
     var facebook = payload.facebook || '';
     var permission = !!payload.permission;
@@ -47,20 +47,42 @@ function doPost(e) {
     }
 
     var safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
-    var submissionFolder = folder.createFolder(
-      formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
-    );
+    var submissionFolder = null;
+    var folderUrl = '';
 
-    var folderUrl = submissionFolder.getUrl();
+    // New faster upload path: files are already stored in Cloudflare R2.
+    // Apps Script only logs links instead of receiving/decoding huge base64 payloads.
+    var needsDriveFallback = images.some(function(img) { return img && img.data && !img.url && !img.key; });
+    if (needsDriveFallback) {
+      submissionFolder = folder.createFolder(
+        formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
+      );
+      folderUrl = submissionFolder.getUrl();
+    }
 
     images.forEach(function(img, index) {
-      var result = saveFile(submissionFolder, img.data, img.filename || ('image-' + (index + 1) + '.jpg'));
+      var fileUrl = '';
+      if (img.url) {
+        fileUrl = img.url;
+      } else if (img.key) {
+        fileUrl = img.key;
+      } else if (img.data) {
+        if (!submissionFolder) {
+          submissionFolder = folder.createFolder(
+            formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
+          );
+          folderUrl = submissionFolder.getUrl();
+        }
+        var result = saveFile(submissionFolder, img.data, img.filename || ('image-' + (index + 1) + '.jpg'));
+        fileUrl = result.url;
+      }
+
       sheet.appendRow([
         timestamp,
         name,
         email,
         phone,
-        instagram,
+        social,
         twitter,
         facebook,
         permission ? 'Yes' : 'No',
@@ -71,7 +93,7 @@ function doPost(e) {
         img.filename || '',
         img.title || '',
         img.description || '',
-        result.url
+        fileUrl
       ]);
     });
 
