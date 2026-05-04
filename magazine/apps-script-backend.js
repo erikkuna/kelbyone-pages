@@ -130,13 +130,63 @@ function saveFile(folder, dataUrl, filename) {
 
 function sendConfirmationEmail(email, name, count) {
   var subject = 'KelbyOne Magazine — Submission Received';
+  var imageWord = 'image' + (count === 1 ? '' : 's');
   var body = 'Hi ' + name + ',\n\n'
-    + 'Thanks for submitting your work to KelbyOne Magazine. We received ' + count + ' image' + (count === 1 ? '' : 's') + '.\n\n'
+    + 'Thanks for submitting your work to KelbyOne Magazine. We received ' + count + ' ' + imageWord + '.\n\n'
     + 'Our team will review submissions for upcoming issues. If your work is selected, we\'ll reach out directly. Either way, thanks for sharing your photography with us — credit will always be given to the photographer.\n\n'
+    + 'If you have any questions, just reply to this email and Erik will get it at ekuna@kelbyone.com.\n\n'
     + 'Thanks again,\n'
     + 'KelbyOne';
 
-  MailApp.sendEmail(email, subject, body);
+  var htmlBody = buildKelbyOneEmailHtml(
+    'Magazine',
+    'Submission received',
+    'Hi ' + escapeHtml(name) + ',',
+    [
+      'Thanks for submitting your work to <strong>KelbyOne Magazine</strong>. We received <strong>' + count + ' ' + imageWord + '</strong>.',
+      'Our team will review submissions for upcoming issues. If your work is selected, we\'ll reach out directly. Either way, thanks for sharing your photography with us — credit will always be given to the photographer.',
+      'If you have any questions, just reply to this email and Erik will get it at <a href="mailto:ekuna@kelbyone.com" style="color:#d6a34a;font-weight:700;">ekuna@kelbyone.com</a>.'
+    ],
+    'Thanks again,<br><strong>KelbyOne</strong>'
+  );
+
+  MailApp.sendEmail({
+    to: email,
+    subject: subject,
+    body: body,
+    htmlBody: htmlBody,
+    name: 'KelbyOne Magazine',
+    replyTo: 'ekuna@kelbyone.com'
+  });
+}
+
+function buildKelbyOneEmailHtml(kicker, title, greeting, paragraphs, signoff) {
+  var body = paragraphs.map(function(p) {
+    return '<p style="margin:0 0 16px;font-size:16px;line-height:1.55;">' + p + '</p>';
+  }).join('');
+
+  return '<div style="margin:0;padding:0;background:#f6f6f6;font-family:Arial,Helvetica,sans-serif;color:#222;">'
+    + '<div style="max-width:620px;margin:0 auto;padding:28px 18px;">'
+    + '<div style="background:#111;border-radius:16px 16px 0 0;padding:26px 28px;color:#fff;">'
+    + '<div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#d6a34a;font-weight:700;">KelbyOne · ' + kicker + '</div>'
+    + '<h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#fff;">' + title + '</h1>'
+    + '</div>'
+    + '<div style="background:#fff;border:1px solid #e7e7e7;border-top:0;border-radius:0 0 16px 16px;padding:28px;">'
+    + '<p style="margin:0 0 16px;font-size:16px;line-height:1.55;">' + greeting + '</p>'
+    + body
+    + '<p style="margin:0;font-size:16px;line-height:1.55;">' + signoff + '</p>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function buildHeadshotFilename(originalName, name, location) {
