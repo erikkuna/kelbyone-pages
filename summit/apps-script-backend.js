@@ -157,13 +157,47 @@ function saveFile(folder, dataUrl, filename) {
 
 function sendConfirmationEmail(email, name, count) {
   var subject = 'KelbyOne Summit — Photos Received';
+  var imageWord = 'image' + (count === 1 ? '' : 's');
   var body = 'Hi ' + name + ',\n\n'
-    + 'Thanks for sharing your Summit photos with us. We received ' + count + ' image' + (count === 1 ? '' : 's') + '.\n\n'
+    + 'Thanks for sharing your Summit photos with us. We received ' + count + ' ' + imageWord + '.\n\n'
     + 'We appreciate you giving us permission to share them with the group, models, and locations, to consider them for a member gallery of the best work, and to use them to promote the event and your work with proper credit.\n\n'
+    + 'If you have any questions, just reply to this email and Erik will get it at ekuna@kelbyone.com.\n\n'
     + 'Thanks again,\n'
     + 'KelbyOne';
 
-  MailApp.sendEmail(email, subject, body);
+  var htmlBody = '<div style="margin:0;padding:0;background:#f6f6f6;font-family:Arial,Helvetica,sans-serif;color:#222;">'
+    + '<div style="max-width:620px;margin:0 auto;padding:28px 18px;">'
+    + '<div style="background:#111;border-radius:16px 16px 0 0;padding:26px 28px;color:#fff;">'
+    + '<div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#d6a34a;font-weight:700;">KelbyOne Summit</div>'
+    + '<h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;color:#fff;">Photos received</h1>'
+    + '</div>'
+    + '<div style="background:#fff;border:1px solid #e7e7e7;border-top:0;border-radius:0 0 16px 16px;padding:28px;">'
+    + '<p style="margin:0 0 16px;font-size:16px;line-height:1.55;">Hi ' + escapeHtml(name) + ',</p>'
+    + '<p style="margin:0 0 16px;font-size:16px;line-height:1.55;">Thanks for sharing your Summit photos with us. We received <strong>' + count + ' ' + imageWord + '</strong>.</p>'
+    + '<p style="margin:0 0 16px;font-size:16px;line-height:1.55;">We appreciate you giving us permission to share them with the group, models, and locations, to consider them for a member gallery of the best work, and to use them to promote the event and your work with proper credit.</p>'
+    + '<p style="margin:0 0 22px;font-size:16px;line-height:1.55;">If you have any questions, just reply to this email and Erik will get it at <a href="mailto:ekuna@kelbyone.com" style="color:#d6a34a;font-weight:700;">ekuna@kelbyone.com</a>.</p>'
+    + '<p style="margin:0;font-size:16px;line-height:1.55;">Thanks again,<br><strong>KelbyOne</strong></p>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+
+  MailApp.sendEmail({
+    to: email,
+    subject: subject,
+    body: body,
+    htmlBody: htmlBody,
+    name: 'KelbyOne Summit',
+    replyTo: 'ekuna@kelbyone.com'
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function formatTimestamp(date) {
