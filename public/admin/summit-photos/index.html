@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summit Photo Admin — KelbyOne</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --bg: #070707;
+  --panel: #121212;
+  --panel-2: #191919;
+  --border: rgba(255,255,255,.12);
+  --text: #f5f1e8;
+  --muted: #aaa397;
+  --accent: #d6a34a;
+  --accent-2: #f0c878;
+  --danger: #ff6b5f;
+  --success: #2ecc71;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(circle at top, rgba(214,163,74,.12), transparent 32%), var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 42px 20px 18px;
+}
+.badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: #111;
+  border-radius: 999px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-size: 12px;
+  font-weight: 900;
+}
+h1 { margin: 18px 0 8px; font-size: clamp(32px, 5vw, 56px); line-height: .96; letter-spacing: -.04em; }
+.lede { margin: 0; color: var(--muted); max-width: 820px; line-height: 1.5; }
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px 50px;
+}
+.card {
+  background: rgba(18,18,18,.92);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.28);
+}
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 180px 180px;
+  gap: 12px;
+  align-items: end;
+}
+label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 800; margin-bottom: 7px; }
+input {
+  width: 100%;
+  background: #0c0c0c;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font: inherit;
+  padding: 12px 13px;
+}
+button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 16px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #111;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+}
+button.secondary { color: var(--text); background: var(--panel-2); border: 1px solid var(--border); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.stats { color: var(--muted); font-size: 14px; }
+.progress-wrap { margin-top: 14px; display: none; }
+.progress-wrap.visible { display: block; }
+.progress-bar { height: 10px; border-radius: 999px; background: #0b0b0b; border: 1px solid var(--border); overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width .15s ease; }
+.progress-text { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.alert { margin-top: 14px; padding: 12px 14px; border-radius: 12px; display: none; line-height: 1.4; }
+.alert.visible { display: block; }
+.alert.error { color: #ffd6d2; background: rgba(255,107,95,.12); border: 1px solid rgba(255,107,95,.32); }
+.alert.success { color: #d7ffe8; background: rgba(46,204,113,.10); border: 1px solid rgba(46,204,113,.28); }
+.table-wrap { margin-top: 18px; overflow: auto; border: 1px solid var(--border); border-radius: 14px; }
+table { width: 100%; border-collapse: collapse; min-width: 820px; }
+th, td { padding: 11px 12px; border-bottom: 1px solid rgba(255,255,255,.08); text-align: left; vertical-align: middle; }
+th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; background: rgba(255,255,255,.03); }
+td { color: var(--text); font-size: 14px; }
+tr:last-child td { border-bottom: 0; }
+.filename { max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+a { color: var(--accent-2); text-decoration: none; font-weight: 700; }
+.small { font-size: 12px; color: var(--muted); }
+.footer-note { color: var(--muted); font-size: 13px; margin: 14px 2px 0; line-height: 1.5; }
+@media (max-width: 760px) {
+  .controls { grid-template-columns: 1fr; }
+  .toolbar { align-items: stretch; }
+  .toolbar > div:last-child { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <span class="badge">KelbyOne Admin</span>
+  <h1>Summit Photo Browser</h1>
+  <p class="lede">Browse the R2 Summit upload bucket, download individual photos, or package the full result set into one ZIP file in your browser.</p>
+</header>
+
+<main class="app">
+  <section class="card">
+    <div class="controls">
+      <div>
+        <label for="token">Admin token</label>
+        <input id="token" type="password" autocomplete="off" placeholder="Paste SUMMIT_ADMIN_TOKEN">
+      </div>
+      <div>
+        <label for="prefix">R2 prefix</label>
+        <input id="prefix" type="text" value="summit/" autocomplete="off">
+      </div>
+      <div>
+        <button id="loadBtn" type="button">Load photos</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="stats" id="stats">No photos loaded yet.</div>
+      <div>
+        <button class="secondary" id="copyLinksBtn" type="button" disabled>Copy links</button>
+        <button id="downloadZipBtn" type="button" disabled>Download ZIP</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+
+    <div class="alert error" id="errorBox"></div>
+    <div class="alert success" id="successBox"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Uploaded</th>
+            <th>Size</th>
+            <th>R2 key</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="5" class="small">Load photos to begin.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="footer-note">Security note: this page requires the Cloudflare Pages environment variable <strong>SUMMIT_ADMIN_TOKEN</strong>. The token is stored only in this browser tab/session and is sent as a Bearer token to the admin API.</p>
+  </section>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  var tokenInput = document.getElementById('token');
+  var prefixInput = document.getElementById('prefix');
+  var loadBtn = document.getElementById('loadBtn');
+  var copyLinksBtn = document.getElementById('copyLinksBtn');
+  var downloadZipBtn = document.getElementById('downloadZipBtn');
+  var rows = document.getElementById('rows');
+  var stats = document.getElementById('stats');
+  var errorBox = document.getElementById('errorBox');
+  var successBox = document.getElementById('successBox');
+  var progressWrap = document.getElementById('progressWrap');
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  var objects = [];
+
+  tokenInput.value = sessionStorage.getItem('summitAdminToken') || '';
+
+  loadBtn.addEventListener('click', loadAll);
+  copyLinksBtn.addEventListener('click', copyLinks);
+  downloadZipBtn.addEventListener('click', downloadZip);
+
+  function setBusy(busy) {
+    loadBtn.disabled = busy;
+    copyLinksBtn.disabled = busy || !objects.length;
+    downloadZipBtn.disabled = busy || !objects.length;
+  }
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.classList.add('visible');
+    successBox.classList.remove('visible');
+  }
+
+  function showSuccess(message) {
+    successBox.textContent = message;
+    successBox.classList.add('visible');
+    errorBox.classList.remove('visible');
+  }
+
+  function clearAlerts() {
+    errorBox.classList.remove('visible');
+    successBox.classList.remove('visible');
+  }
+
+  function setProgress(percent, message) {
+    progressWrap.classList.add('visible');
+    progressFill.style.width = Math.max(0, Math.min(100, percent)) + '%';
+    progressText.textContent = message || '';
+  }
+
+  function hideProgress() {
+    progressWrap.classList.remove('visible');
+    progressFill.style.width = '0%';
+    progressText.textContent = '';
+  }
+
+  async function loadAll() {
+    clearAlerts();
+    hideProgress();
+    objects = [];
+    renderRows();
+
+    var token = tokenInput.value.trim();
+    var prefix = prefixInput.value.trim() || 'summit/';
+    if (!token) {
+      showError('Paste the admin token first.');
+      return;
+    }
+    if (!prefix.startsWith('summit/')) {
+      showError('Prefix must start with summit/.');
+      return;
+    }
+
+    sessionStorage.setItem('summitAdminToken', token);
+    setBusy(true);
+
+    try {
+      var cursor = '';
+      var page = 0;
+      do {
+        page += 1;
+        setProgress(5, 'Loading page ' + page + ' from R2...');
+        var url = '/api/summit-admin-list?limit=1000&prefix=' + encodeURIComponent(prefix);
+        if (cursor) url += '&cursor=' + encodeURIComponent(cursor);
+
+        var response = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+        var result = await response.json().catch(function() { return {}; });
+        if (!response.ok || !result.success) throw new Error(result.error || 'Failed to load Summit uploads.');
+
+        objects = objects.concat(result.objects || []);
+        cursor = result.cursor || '';
+        stats.textContent = objects.length + ' photos loaded...';
+      } while (cursor);
+
+      objects.sort(function(a, b) { return String(b.uploaded || '').localeCompare(String(a.uploaded || '')); });
+      renderRows();
+      showSuccess('Loaded ' + objects.length + ' Summit photos (' + formatBytes(objects.reduce(function(sum, object) { return sum + Number(object.size || 0); }, 0)) + ').');
+    } catch (error) {
+      showError(error.message || 'Could not load photos.');
+    } finally {
+      hideProgress();
+      setBusy(false);
+    }
+  }
+
+  function renderRows() {
+    copyLinksBtn.disabled = !objects.length;
+    downloadZipBtn.disabled = !objects.length;
+    stats.textContent = objects.length ? objects.length + ' photos loaded · ' + formatBytes(objects.reduce(function(sum, object) { return sum + Number(object.size || 0); }, 0)) : 'No photos loaded yet.';
+
+    if (!objects.length) {
+      rows.innerHTML = '<tr><td colspan="5" class="small">Load photos to begin.</td></tr>';
+      return;
+    }
+
+    rows.innerHTML = objects.map(function(object) {
+      var href = object.url + '&token=' + encodeURIComponent(tokenInput.value.trim());
+      return '<tr>'
+        + '<td class="filename" title="' + escapeHtml(object.filename) + '">' + escapeHtml(object.filename) + '</td>'
+        + '<td>' + escapeHtml(formatDate(object.uploaded)) + '</td>'
+        + '<td>' + escapeHtml(formatBytes(object.size)) + '</td>'
+        + '<td class="small" title="' + escapeHtml(object.key) + '">' + escapeHtml(object.key) + '</td>'
+        + '<td><a href="' + escapeHtml(href) + '" target="_blank" rel="noopener">Download</a></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  async function copyLinks() {
+    var token = tokenInput.value.trim();
+    var links = objects.map(function(object) {
+      return window.location.origin + object.url + '&token=' + encodeURIComponent(token);
+    }).join('\n');
+
+    try {
+      await navigator.clipboard.writeText(links);
+      showSuccess('Copied ' + objects.length + ' download links.');
+    } catch (error) {
+      showError('Could not copy links. Browser clipboard permission may be blocked.');
+    }
+  }
+
+  async function downloadZip() {
+    clearAlerts();
+
+    if (!window.JSZip) {
+      showError('ZIP library did not load. Check the browser connection and refresh.');
+      return;
+    }
+
+    var token = tokenInput.value.trim();
+    if (!token) {
+      showError('Paste the admin token first.');
+      return;
+    }
+
+    setBusy(true);
+    var zip = new JSZip();
+    var manifest = [];
+
+    try {
+      for (var i = 0; i < objects.length; i++) {
+        var object = objects[i];
+        var pct = Math.round((i / objects.length) * 85);
+        setProgress(pct, 'Downloading ' + (i + 1) + ' of ' + objects.length + ': ' + object.filename);
+
+        var response = await fetch(object.url, { headers: { Authorization: 'Bearer ' + token } });
+        if (!response.ok) throw new Error('Failed to download ' + object.key + ' (' + response.status + ')');
+
+        var blob = await response.blob();
+        var safePath = object.key.replace(/^summit\//, '').replace(/[\\:*?"<>|]/g, '-');
+        zip.file(safePath, blob);
+        manifest.push({ key: object.key, filename: object.filename, size: object.size, uploaded: object.uploaded });
+      }
+
+      zip.file('summit-upload-manifest.json', JSON.stringify(manifest, null, 2));
+      setProgress(90, 'Building ZIP file...');
+
+      var zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, function(metadata) {
+        setProgress(90 + Math.round(metadata.percent * 0.1), 'Building ZIP file... ' + Math.round(metadata.percent) + '%');
+      });
+
+      var today = new Date().toISOString().slice(0, 10);
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(zipBlob);
+      a.download = 'kelbyone-summit-photos-' + today + '.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function() { URL.revokeObjectURL(a.href); }, 30000);
+      showSuccess('ZIP ready: ' + objects.length + ' photos.');
+    } catch (error) {
+      showError(error.message || 'ZIP download failed.');
+    } finally {
+      hideProgress();
+      setBusy(false);
+    }
+  }
+
+  function formatBytes(bytes) {
+    bytes = Number(bytes || 0);
+    if (!bytes) return '—';
+    var units = ['B', 'KB', 'MB', 'GB'];
+    var i = 0;
+    while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
+    return bytes.toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+  }
+
+  function formatDate(value) {
+    if (!value) return '—';
+    var date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+    return date.toLocaleString();
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+})();
+</script>
+</body>
+</html>
