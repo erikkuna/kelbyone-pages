@@ -33,7 +33,7 @@ function doPost(e) {
     if (!permission) throw new Error('Permission checkbox is required.');
     if (!images.length) throw new Error('At least one image is required.');
     if (images.length > MAX_FILES) throw new Error('Too many files uploaded. Max is ' + MAX_FILES + '.');
-    if (!headshot || !headshot.data) throw new Error('Headshot is required.');
+    if (!headshot || (!headshot.data && !headshot.url && !headshot.key)) throw new Error('Headshot is required.');
 
     var folder = DriveApp.getFolderById(FOLDER_ID);
     var sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
@@ -49,17 +49,54 @@ function doPost(e) {
     }
 
     var safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
-    var submissionFolder = folder.createFolder(
-      formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
-    );
+    var submissionFolder = null;
+    var folderUrl = '';
 
-    var folderUrl = submissionFolder.getUrl();
+    // New faster upload path: files are already stored in Cloudflare R2.
+    // Apps Script only logs links instead of receiving/decoding huge base64 payloads.
+    var needsDriveFallback = (headshot && headshot.data && !headshot.url && !headshot.key)
+      || images.some(function(img) { return img && img.data && !img.url && !img.key; });
+    if (needsDriveFallback) {
+      submissionFolder = folder.createFolder(
+        formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
+      );
+      folderUrl = submissionFolder.getUrl();
+    }
 
     var headshotFilename = buildHeadshotFilename(headshot.filename || 'headshot.jpg', name, location);
-    var headshotResult = saveFile(submissionFolder, headshot.data, headshotFilename);
+    var headshotUrl = '';
+    if (headshot.url) {
+      headshotUrl = headshot.url;
+    } else if (headshot.key) {
+      headshotUrl = headshot.key;
+    } else if (headshot.data) {
+      if (!submissionFolder) {
+        submissionFolder = folder.createFolder(
+          formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
+        );
+        folderUrl = submissionFolder.getUrl();
+      }
+      var headshotResult = saveFile(submissionFolder, headshot.data, headshotFilename);
+      headshotUrl = headshotResult.url;
+    }
 
     images.forEach(function(img, index) {
-      var result = saveFile(submissionFolder, img.data, img.filename || ('image-' + (index + 1) + '.jpg'));
+      var fileUrl = '';
+      if (img.url) {
+        fileUrl = img.url;
+      } else if (img.key) {
+        fileUrl = img.key;
+      } else if (img.data) {
+        if (!submissionFolder) {
+          submissionFolder = folder.createFolder(
+            formatTimestamp(timestamp) + ' — ' + name + ' (' + safeEmail + ')'
+          );
+          folderUrl = submissionFolder.getUrl();
+        }
+        var result = saveFile(submissionFolder, img.data, img.filename || ('image-' + (index + 1) + '.jpg'));
+        fileUrl = result.url;
+      }
+
       sheet.appendRow([
         timestamp,
         name,
@@ -73,9 +110,9 @@ function doPost(e) {
         img.filename || '',
         img.title || '',
         img.description || '',
-        result.url,
+        fileUrl,
         headshotFilename,
-        headshotResult.url
+        headshotUrl
       ]);
     });
 

@@ -456,6 +456,7 @@ body {
 
   var ENDPOINT = 'https://script.google.com/macros/s/AKfycbxHsOYb-ztK4Lb8lYnF41fA30er8jh-IINimCHRrtKcUIKq3aj_nNYtW-vMiigUQc6R/exec';
   var MAX_FILES = 5;
+  var MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB per image with direct R2 upload
   var ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/heif', 'image/heic'];
   var selectedFiles = [];
   var headshotFile = null;
@@ -485,6 +486,11 @@ body {
   headshotInput.addEventListener('change', function(e) {
     var file = e.target.files && e.target.files[0];
     if (file && isAcceptedFile(file)) {
+      if (file.size > MAX_FILE_SIZE) {
+        showError('Headshot file too large. Maximum size is 100 MB.');
+        headshotInput.value = '';
+        return;
+      }
       headshotFile = file;
       headshotName.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
       headshotRemove.style.display = 'inline-flex';
@@ -525,7 +531,14 @@ body {
     var files = Array.from(fileList || []);
     files.forEach(function(file) {
       if (selectedFiles.length >= MAX_FILES) return;
-      if (!isAcceptedFile(file)) return;
+      if (!isAcceptedFile(file)) {
+        showError('Unsupported file type. Accepted: JPG, JPEG, PNG, HEIF, HEIC.');
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        showError('File too large. Maximum size is 100 MB per image.');
+        return;
+      }
       selectedFiles.push({ file: file, title: '', description: '', id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()) });
     });
     renderFiles();
@@ -601,20 +614,27 @@ body {
     progressText.textContent = 'Preparing files...';
 
     try {
+      var email = document.getElementById('email').value.trim();
       var images = [];
+      var uploadCount = selectedFiles.length + (headshotFile ? 1 : 0);
+
       for (var i = 0; i < selectedFiles.length; i++) {
-        progressText.textContent = 'Encoding file ' + (i + 1) + ' of ' + selectedFiles.length + '...';
-        progressFill.style.width = String(10 + Math.round((i / selectedFiles.length) * 70)) + '%';
+        var item = selectedFiles[i];
+        var startPct = 5 + Math.round((i / uploadCount) * 85);
+        var endPct = 5 + Math.round(((i + 1) / uploadCount) * 85);
+        progressText.textContent = 'Uploading image ' + (i + 1) + ' of ' + selectedFiles.length + '...';
+        progressFill.style.width = startPct + '%';
+
+        var uploadResult = await uploadFileToR2(item.file, email, 'image', i, selectedFiles.length, startPct, endPct);
         images.push({
-          filename: selectedFiles[i].file.name,
-          title: selectedFiles[i].title,
-          description: selectedFiles[i].description,
-          data: await fileToDataURL(selectedFiles[i].file)
+          url: uploadResult.downloadUrl ? new URL(uploadResult.downloadUrl, window.location.origin).href : '',
+          key: uploadResult.key || '',
+          mimeType: uploadResult.mimeType || item.file.type || 'application/octet-stream',
+          filename: uploadResult.filename || item.file.name,
+          title: item.title,
+          description: item.description
         });
       }
-
-      progressText.textContent = 'Submitting your images...';
-      progressFill.style.width = '90%';
 
       if (!ENDPOINT || ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_DEPLOYMENT_URL') {
         throw new Error('Upload service is not connected yet. Please try again soon.');
@@ -622,16 +642,24 @@ body {
 
       var headshotPayload = null;
       if (headshotFile) {
-        progressText.textContent = 'Encoding headshot...';
+        var headshotStartPct = 5 + Math.round((selectedFiles.length / uploadCount) * 85);
+        progressText.textContent = 'Uploading headshot...';
+        progressFill.style.width = headshotStartPct + '%';
+        var headshotResult = await uploadFileToR2(headshotFile, email, 'headshot', 0, 1, headshotStartPct, 90);
         headshotPayload = {
-          filename: headshotFile.name,
-          data: await fileToDataURL(headshotFile)
+          url: headshotResult.downloadUrl ? new URL(headshotResult.downloadUrl, window.location.origin).href : '',
+          key: headshotResult.key || '',
+          mimeType: headshotResult.mimeType || headshotFile.type || 'application/octet-stream',
+          filename: headshotResult.filename || headshotFile.name
         };
       }
 
+      progressText.textContent = 'Saving submission details...';
+      progressFill.style.width = '94%';
+
       var payload = {
         name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
+        email: email,
         location: document.getElementById('location').value.trim(),
         social: document.getElementById('social').value.trim(),
         permission: document.getElementById('permission').checked,
@@ -674,6 +702,49 @@ body {
     } finally {
       submitBtn.disabled = false;
     }
+  }
+
+  function uploadFileToR2(file, email, kind, index, total, startPct, endPct) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      var params = new URLSearchParams({ filename: file.name, email: email, kind: kind || 'image' });
+
+      xhr.open('POST', '/api/magazine-upload?' + params.toString(), true);
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.setRequestHeader('X-File-Name', file.name);
+      xhr.setRequestHeader('X-Email', email);
+      xhr.setRequestHeader('X-Upload-Kind', kind || 'image');
+
+      xhr.upload.onprogress = function(e) {
+        if (!e.lengthComputable) {
+          progressText.textContent = (kind === 'headshot' ? 'Uploading headshot' : 'Uploading image ' + (index + 1) + ' of ' + total) + ' (' + formatFileSize(file.size) + ')...';
+          return;
+        }
+
+        var pct = startPct + ((e.loaded / e.total) * (endPct - startPct));
+        progressFill.style.width = Math.min(90, Math.round(pct)) + '%';
+        var label = kind === 'headshot' ? 'Uploading headshot' : 'Uploading image ' + (index + 1) + ' of ' + total;
+        progressText.textContent = label + '... ' + Math.round((e.loaded / e.total) * 100) + '%';
+      };
+
+      xhr.onload = function() {
+        var result;
+        try { result = JSON.parse(xhr.responseText || '{}'); } catch(e) { result = {}; }
+
+        if (xhr.status >= 200 && xhr.status < 300 && result.success) {
+          resolve(result);
+        } else {
+          reject(new Error(result.error || 'Upload failed with status ' + xhr.status));
+        }
+      };
+
+      xhr.onerror = function() { reject(new Error('Upload connection failed. Please check your connection and try again.')); };
+      xhr.ontimeout = function() { reject(new Error('Upload timed out. Please try again on a faster connection.')); };
+      xhr.onabort = function() { reject(new Error('Upload was canceled before it finished.')); };
+      xhr.timeout = 600000;
+
+      xhr.send(file);
+    });
   }
 
   function validateForm() {
@@ -728,15 +799,6 @@ body {
   function hideStatus() {
     statusSuccess.classList.remove('visible');
     statusError.classList.remove('visible');
-  }
-
-  function fileToDataURL(file) {
-    return new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function() { resolve(reader.result); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   }
 
   function formatFileSize(bytes) {
