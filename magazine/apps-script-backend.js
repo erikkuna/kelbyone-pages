@@ -63,7 +63,7 @@ function doPost(e) {
       folderUrl = submissionFolder.getUrl();
     }
 
-    var headshotFilename = buildHeadshotFilename(headshot.filename || 'headshot.jpg', name, location);
+    var headshotFilename = headshot.filename || 'headshot.jpg';
     var headshotUrl = '';
     if (headshot.url) {
       headshotUrl = headshot.url;
@@ -76,7 +76,9 @@ function doPost(e) {
         );
         folderUrl = submissionFolder.getUrl();
       }
-      var headshotResult = saveFile(submissionFolder, headshot.data, headshotFilename);
+      var legacyHeadshotFilename = buildHeadshotFilename(headshot.filename || 'headshot.jpg', name, location);
+      var headshotResult = saveFile(submissionFolder, headshot.data, legacyHeadshotFilename);
+      headshotFilename = legacyHeadshotFilename;
       headshotUrl = headshotResult.url;
     }
 

@@ -625,7 +625,8 @@ body {
         progressText.textContent = 'Uploading image ' + (i + 1) + ' of ' + selectedFiles.length + '...';
         progressFill.style.width = startPct + '%';
 
-        var uploadResult = await uploadFileToR2(item.file, email, 'image', i, selectedFiles.length, startPct, endPct);
+        var uploadFilename = buildSubmissionFilename(item.file.name);
+        var uploadResult = await uploadFileToR2(item.file, email, 'image', i, selectedFiles.length, startPct, endPct, uploadFilename);
         images.push({
           url: uploadResult.downloadUrl ? new URL(uploadResult.downloadUrl, window.location.origin).href : '',
           key: uploadResult.key || '',
@@ -645,7 +646,8 @@ body {
         var headshotStartPct = 5 + Math.round((selectedFiles.length / uploadCount) * 85);
         progressText.textContent = 'Uploading headshot...';
         progressFill.style.width = headshotStartPct + '%';
-        var headshotResult = await uploadFileToR2(headshotFile, email, 'headshot', 0, 1, headshotStartPct, 90);
+        var headshotFilename = buildSubmissionFilename(headshotFile.name);
+        var headshotResult = await uploadFileToR2(headshotFile, email, 'headshot', 0, 1, headshotStartPct, 90, headshotFilename);
         headshotPayload = {
           url: headshotResult.downloadUrl ? new URL(headshotResult.downloadUrl, window.location.origin).href : '',
           key: headshotResult.key || '',
@@ -704,14 +706,15 @@ body {
     }
   }
 
-  function uploadFileToR2(file, email, kind, index, total, startPct, endPct) {
+  function uploadFileToR2(file, email, kind, index, total, startPct, endPct, uploadFilename) {
     return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
-      var params = new URLSearchParams({ filename: file.name, email: email, kind: kind || 'image' });
+      uploadFilename = uploadFilename || file.name;
+      var params = new URLSearchParams({ filename: uploadFilename, email: email, kind: kind || 'image' });
 
       xhr.open('POST', '/api/magazine-upload?' + params.toString(), true);
       xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-      xhr.setRequestHeader('X-File-Name', file.name);
+      xhr.setRequestHeader('X-File-Name', uploadFilename);
       xhr.setRequestHeader('X-Email', email);
       xhr.setRequestHeader('X-Upload-Kind', kind || 'image');
 
@@ -745,6 +748,29 @@ body {
 
       xhr.send(file);
     });
+  }
+
+  function buildSubmissionFilename(originalName) {
+    var name = document.getElementById('name').value.trim();
+    var location = document.getElementById('location').value.trim();
+    var dotIndex = originalName.lastIndexOf('.');
+    var base = dotIndex > 0 ? originalName.substring(0, dotIndex) : originalName;
+    var ext = dotIndex > 0 ? originalName.substring(dotIndex) : '';
+    var safeBase = sanitizeFilenamePart(base) || 'submission';
+    var safeName = sanitizeFilenamePart(name);
+    var safeLocation = sanitizeFilenamePart(location);
+    var suffix = [safeName, safeLocation].filter(Boolean).join('_');
+    return suffix ? safeBase + '_' + suffix + ext : safeBase + ext;
+  }
+
+  function sanitizeFilenamePart(value) {
+    return String(value || '')
+      .replace(/[\/\\:*?"<>|]/g, '')
+      .replace(/[,]+/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 80);
   }
 
   function validateForm() {
