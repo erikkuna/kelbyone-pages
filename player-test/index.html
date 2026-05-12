@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KelbyOne Demo Player Test</title>
+  <link href="https://vjs.zencdn.net/8.21.1/video-js.css" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08111f;
+      --panel: rgba(13, 24, 42, 0.78);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f7fbff;
+      --muted: #a9b7ca;
+      --accent: #34c6f4;
+      --accent-2: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(52, 198, 244, 0.26), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.22), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0 0 14px;
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: 0.94;
+      letter-spacing: -0.06em;
+    }
+
+    .lede {
+      max-width: 760px;
+      margin: 0 0 34px;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.55;
+    }
+
+    .player-shell {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+    }
+
+    .video-js {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+      background: #020711;
+      font-size: 16px;
+    }
+
+    .video-js .vjs-big-play-button {
+      width: 88px;
+      height: 88px;
+      margin: -44px 0 0 -44px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 18px 42px rgba(52, 198, 244, 0.28);
+    }
+
+    .video-js .vjs-big-play-button .vjs-icon-placeholder:before {
+      line-height: 88px;
+      font-size: 54px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 22px;
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+    }
+
+    .meta h2 {
+      margin: 0 0 5px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .meta p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid rgba(52, 198, 244, 0.35);
+      border-radius: 999px;
+      color: #cff5ff;
+      background: rgba(52, 198, 244, 0.12);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .note {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .note span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 760px) {
+      main { padding: 30px 0; }
+      .meta, .notes { grid-template-columns: 1fr; }
+      .pill { width: fit-content; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">KelbyOne player test</div>
+    <h1>Demo player wiring sandbox</h1>
+    <p class="lede">A clean standalone test page using Video.js with an HLS demo source, responsive 16:9 layout, native controls, poster art, and a small status check so we can validate the player path before wiring real course media.</p>
+
+    <section class="player-shell" aria-label="Demo video player">
+      <video
+        id="kelby-demo-player"
+        class="video-js vjs-big-play-centered vjs-fluid"
+        controls
+        preload="metadata"
+        playsinline
+        poster="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1600&q=80"
+        data-setup='{"responsive": true, "fluid": true, "playbackRates": [0.5, 1, 1.25, 1.5, 2], "controlBar": { "pictureInPictureToggle": true }}'>
+        <source src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" type="application/x-mpegURL">
+        <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video.</p>
+      </video>
+      <div class="meta">
+        <div>
+          <h2>Demo lesson: Player integration check</h2>
+          <p id="player-status">Initializing player…</p>
+        </div>
+        <div class="pill">HLS + MP4 fallback</div>
+      </div>
+    </section>
+
+    <div class="notes" aria-label="Implementation notes">
+      <div class="note"><strong>Library</strong><span>Video.js loaded from CDN for this first wiring test.</span></div>
+      <div class="note"><strong>Controls</strong><span>Play/pause, scrubber, volume, captions slot, PiP, fullscreen, and playback speed.</span></div>
+      <div class="note"><strong>Next swap</strong><span>Replace the demo source URLs with KelbyOne-hosted course media or the target provider embed.</span></div>
+    </div>
+  </main>
+
+  <script src="https://vjs.zencdn.net/8.21.1/video.min.js"></script>
+  <script>
+    const statusEl = document.getElementById('player-status');
+    const player = videojs('kelby-demo-player');
+
+    player.ready(() => {
+      statusEl.textContent = 'Player ready. Demo stream loaded and controls are active.';
+    });
+
+    player.on('error', () => {
+      const error = player.error();
+      statusEl.textContent = `Player error${error && error.message ? `: ${error.message}` : ''}`;
+    });
+  </script>
+</body>
+</html>
