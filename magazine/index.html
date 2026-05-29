@@ -255,16 +255,50 @@ body {
   color: var(--text-muted);
   margin-bottom: 0.6rem;
 }
+.file-field { margin-top: 0.65rem; }
+.file-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+.file-field.required label::after {
+  content: "Required";
+  margin-left: 0.5rem;
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.file-meta input,
 .file-meta textarea {
   width: 100%;
-  min-height: 60px;
-  resize: vertical;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text-primary);
   padding: 0.65rem 0.75rem;
   font-family: inherit;
+  font-size: 0.95rem;
+}
+.file-meta textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+.file-field.has-error input,
+.file-field.has-error textarea {
+  border-color: var(--error);
+}
+.file-error {
+  display: none;
+  margin-top: 0.32rem;
+  color: var(--error);
+  font-size: 0.76rem;
+}
+.file-field.has-error .file-error {
+  display: block;
 }
 .remove-btn {
   width: 34px;
@@ -568,19 +602,48 @@ body {
       meta.querySelector('.file-name').textContent = item.file.name;
       meta.querySelector('.file-sub').textContent = formatFileSize(item.file.size);
 
+      var titleField = document.createElement('div');
+      titleField.className = 'file-field required';
+      titleField.dataset.fileField = 'title';
+      var titleLabel = document.createElement('label');
+      titleLabel.textContent = 'Image title';
       var title = document.createElement('input');
       title.type = 'text';
-      title.placeholder = 'Optional image title';
+      title.placeholder = 'Give this image a short title';
+      title.required = true;
       title.value = item.title;
-      title.style.marginBottom = '0.55rem';
-      title.addEventListener('input', function() { item.title = title.value; });
-      meta.appendChild(title);
+      title.addEventListener('input', function() {
+        item.title = title.value;
+        titleField.classList.remove('has-error');
+      });
+      var titleError = document.createElement('div');
+      titleError.className = 'file-error';
+      titleError.textContent = 'Add an image title.';
+      titleField.appendChild(titleLabel);
+      titleField.appendChild(title);
+      titleField.appendChild(titleError);
+      meta.appendChild(titleField);
 
+      var notesField = document.createElement('div');
+      notesField.className = 'file-field required';
+      notesField.dataset.fileField = 'description';
+      var notesLabel = document.createElement('label');
+      notesLabel.textContent = 'Image description';
       var notes = document.createElement('textarea');
-      notes.placeholder = 'Optional image description / story behind the shot';
+      notes.placeholder = 'Describe the photo, story, location, or context';
+      notes.required = true;
       notes.value = item.description;
-      notes.addEventListener('input', function() { item.description = notes.value; });
-      meta.appendChild(notes);
+      notes.addEventListener('input', function() {
+        item.description = notes.value;
+        notesField.classList.remove('has-error');
+      });
+      var notesError = document.createElement('div');
+      notesError.className = 'file-error';
+      notesError.textContent = 'Add an image description.';
+      notesField.appendChild(notesLabel);
+      notesField.appendChild(notes);
+      notesField.appendChild(notesError);
+      meta.appendChild(notesField);
 
       var remove = document.createElement('button');
       remove.type = 'button';
@@ -803,6 +866,26 @@ body {
       valid = false;
     }
 
+    selectedFiles.forEach(function(item, index) {
+      var row = uploadList.children[index];
+      if (!row) return;
+      if (!item.title.trim()) {
+        var titleField = row.querySelector('[data-file-field="title"]');
+        if (titleField) titleField.classList.add('has-error');
+        valid = false;
+      }
+      if (!item.description.trim()) {
+        var notesField = row.querySelector('[data-file-field="description"]');
+        if (notesField) notesField.classList.add('has-error');
+        valid = false;
+      }
+    });
+
+    if (!valid && selectedFiles.length) {
+      errorDetail.textContent = 'Please add a title and description for each image.';
+      statusError.classList.add('visible');
+    }
+
     if (!headshotFile) {
       document.getElementById('headshotField').classList.add('has-error');
       valid = false;
@@ -819,6 +902,9 @@ body {
   function clearErrors() {
     ['nameField', 'emailField', 'locationField', 'headshotField', 'permissionField'].forEach(function(id) {
       document.getElementById(id).classList.remove('has-error');
+    });
+    uploadList.querySelectorAll('.file-field.has-error').forEach(function(field) {
+      field.classList.remove('has-error');
     });
   }
 
