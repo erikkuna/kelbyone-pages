@@ -178,6 +178,23 @@ body {
   word-break: break-all;
 }
 .headshot-row .remove-btn { width: 28px; height: 28px; font-size: 0.9rem; }
+.headshot-row.is-disabled { opacity: 0.48; pointer-events: none; }
+.headshot-existing {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.headshot-existing input {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.05rem;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
 .upload-zone {
   border: 2px dashed var(--border);
   border-radius: 18px;
@@ -422,14 +439,18 @@ body {
         </div>
         <div class="field" id="headshotField">
           <label for="headshot">Your headshot</label>
-          <div class="headshot-row">
+          <div class="headshot-row" id="headshotRow">
             <button class="upload-button headshot-btn" type="button" id="headshotBtn">Choose Headshot</button>
             <span class="headshot-name" id="headshotName">No file selected</span>
             <button type="button" class="remove-btn headshot-remove" id="headshotRemove" aria-label="Remove headshot" style="display:none;">&times;</button>
           </div>
           <input type="file" id="headshotInput" accept=".jpg,.jpeg,.png,.heif,.heic" hidden>
           <div class="helper-note" style="margin-top:0.55rem;">A photo of you, the photographer. JPG, JPEG, PNG, or HEIF.</div>
-          <div class="error-msg">Please add your headshot.</div>
+          <label class="headshot-existing" for="headshotAlreadySubmitted">
+            <input type="checkbox" id="headshotAlreadySubmitted">
+            <span>I’ve already submitted my headshot to KelbyOne Magazine.</span>
+          </label>
+          <div class="error-msg">Please add your headshot or confirm that you’ve already submitted it.</div>
         </div>
       </div>
 
@@ -503,8 +524,10 @@ body {
   var uploadHelper = document.getElementById('uploadHelper');
   var headshotInput = document.getElementById('headshotInput');
   var headshotBtn = document.getElementById('headshotBtn');
+  var headshotRow = document.getElementById('headshotRow');
   var headshotName = document.getElementById('headshotName');
   var headshotRemove = document.getElementById('headshotRemove');
+  var headshotAlreadySubmitted = document.getElementById('headshotAlreadySubmitted');
   var progressContainer = document.getElementById('progressContainer');
   var progressFill = document.getElementById('progressFill');
   var progressText = document.getElementById('progressText');
@@ -536,6 +559,19 @@ body {
     headshotFile = null;
     headshotName.textContent = 'No file selected';
     headshotRemove.style.display = 'none';
+  });
+  headshotAlreadySubmitted.addEventListener('change', function() {
+    if (headshotAlreadySubmitted.checked) {
+      headshotFile = null;
+      headshotInput.value = '';
+      headshotName.textContent = 'Previously submitted';
+      headshotRemove.style.display = 'none';
+      headshotRow.classList.add('is-disabled');
+      document.getElementById('headshotField').classList.remove('has-error');
+    } else {
+      headshotName.textContent = 'No file selected';
+      headshotRow.classList.remove('is-disabled');
+    }
   });
 
   ['dragenter', 'dragover'].forEach(function(eventName) {
@@ -729,7 +765,11 @@ body {
         social: document.getElementById('social').value.trim(),
         permission: document.getElementById('permission').checked,
         images: images,
-        headshot: headshotPayload
+        headshot: headshotPayload || (headshotAlreadySubmitted.checked ? {
+          key: 'previously-submitted',
+          filename: 'Previously submitted'
+        } : null),
+        headshotAlreadySubmitted: headshotAlreadySubmitted.checked
       };
 
       var response = await fetch(ENDPOINT, {
@@ -760,6 +800,7 @@ body {
       headshotFile = null;
       headshotName.textContent = 'No file selected';
       headshotRemove.style.display = 'none';
+      headshotRow.classList.remove('is-disabled');
       renderFiles();
     } catch (err) {
       errorDetail.textContent = err.message || 'Something went wrong. Please try again.';
@@ -886,7 +927,7 @@ body {
       statusError.classList.add('visible');
     }
 
-    if (!headshotFile) {
+    if (!headshotFile && !headshotAlreadySubmitted.checked) {
       document.getElementById('headshotField').classList.add('has-error');
       valid = false;
     }
