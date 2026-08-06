@@ -818,9 +818,6 @@ body {
 
       xhr.open('POST', '/api/magazine-upload?' + params.toString(), true);
       xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-      xhr.setRequestHeader('X-File-Name', uploadFilename);
-      xhr.setRequestHeader('X-Email', email);
-      xhr.setRequestHeader('X-Upload-Kind', kind || 'image');
 
       xhr.upload.onprogress = function(e) {
         if (!e.lengthComputable) {

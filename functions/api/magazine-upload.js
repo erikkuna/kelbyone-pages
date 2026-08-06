@@ -14,6 +14,8 @@ function json(data, status = 200) {
 
 function sanitizeFilename(name) {
   return (name || 'upload')
+    .normalize('NFC')
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
     .replace(/[/\\?%*:|"<>]/g, '-')
     .replace(/\s+/g, ' ')
     .trim()
